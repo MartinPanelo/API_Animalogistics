@@ -25,11 +25,11 @@ namespace API_Animalogistics.Models{
 		[DataType(DataType.EmailAddress, ErrorMessage = "El correo debe contener un formato valido.")]
 		[Required(ErrorMessage = "El corre es obligatorio.")]
 		public string? Correo { get; set; }  	
-        public string? ImgUrl { get; set; } 
+        public string? FotoUrl { get; set; } 
 
         //[Display(Name = "Imagen de perfil")]
 		[NotMapped]
-		public IFormFile? ImgFile { get; set; }
+		public IFormFile? FotoFile { get; set; }
 
 
 

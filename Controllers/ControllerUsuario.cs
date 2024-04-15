@@ -45,7 +45,7 @@ namespace API_Animalogistics.Controllers
                     _contexto.Usuarios.Add(usuario);
                     await _contexto.SaveChangesAsync();
 
-					if (usuario.ImgFile != null && usuario.Id > 0)
+					if (usuario.FotoFile != null && usuario.Id > 0)
 					{
 						string PathData = _config["Data:usuarioImg"];
 						
@@ -54,13 +54,13 @@ namespace API_Animalogistics.Controllers
 							Directory.CreateDirectory(path);
 						} */
 						//Path.GetFileName(u.AvatarFile.FileName);//este nombre se puede repetir
-						string fileName = "avatar_" + usuario.Id + Path.GetExtension(usuario.ImgFile.FileName);
+						string fileName = "avatar_" + usuario.Id + Path.GetExtension(usuario.FotoFile.FileName);
 						string pathCompleto = Path.Combine(PathData, fileName);
-						usuario.ImgUrl = Path.Combine(_config["Data:usuarioImg"], fileName);
+						usuario.FotoUrl = Path.Combine(_config["Data:usuarioImg"], fileName);
 						// Esta operación guarda la foto en memoria en la ruta que necesitamos
 						using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
 						{
-							usuario.ImgFile.CopyTo(stream);
+							usuario.FotoFile.CopyTo(stream);
 						}
                         _contexto.Usuarios.Update(usuario);
 
