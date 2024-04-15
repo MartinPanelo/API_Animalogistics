@@ -13,15 +13,17 @@ namespace API_Animalogistics.Models{
 		[Required(ErrorMessage = "El apellido es obligatorio."),RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ]+$", ErrorMessage = "El apellido debe contener solo letras.")]	
 		public string? Apellido { get; set; }
 		[Required(ErrorMessage = "El D.N.I. es obligatorio.")]
-		[RegularExpression(@"^\d{8}$", ErrorMessage = "El DNI debe contener 8 dígitos.")]
+		[RegularExpression(@"^\d{8}$", ErrorMessage = "El DNI debe contener 8 dígitos numericos.")]
 		[Display(Name = "D.N.I.")]
 		public string? DNI { get; set; }
 		[Required(ErrorMessage = "El teléfono es obligatorio."), RegularExpression(@"^[0-9-]+$", ErrorMessage = "El teléfono debe contener solo numeros.")]
 		[Display(Name = "Teléfono")]
 		public string? Telefono { get; set; }
         [DataType(DataType.Password)]
+		[Required(ErrorMessage = "La contraseña es obligatoria.")]
         public string? Contraseña { get; set; }
 		[DataType(DataType.EmailAddress, ErrorMessage = "El correo debe contener un formato valido.")]
+		[Required(ErrorMessage = "El corre es obligatorio.")]
 		public string? Correo { get; set; }  	
         public string? ImgUrl { get; set; } 
 
