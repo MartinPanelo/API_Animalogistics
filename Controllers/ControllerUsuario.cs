@@ -6,27 +6,29 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API_Animalogistics.Controllers
 {
 
-    [ApiController]
-    [Route("[controller]")]
-    public class ControllerUsuario(DataContext _contexto, IConfiguration _config) : ControllerBase
-    {
-        private readonly DataContext _contexto = _contexto;
-        private readonly IConfiguration _config = _config;
+	[ApiController]
+	[Route("[controller]")]
+	public class ControllerUsuario(DataContext _contexto, IConfiguration _config) : ControllerBase
+	{
+		private readonly DataContext _contexto = _contexto;
+		private readonly IConfiguration _config = _config;
 
 
 
-        [HttpPost("usuarioregistrar")]
-        [AllowAnonymous]
-		public async Task<IActionResult> UsuarioRegistrar([FromForm] Usuario usuario)
+		[HttpPost("usuarioRegistrar")]
+		[AllowAnonymous]
+		public async Task<IActionResult> Registrar([FromForm] Usuario usuario)
 		{
-			if (ModelState.IsValid){
-			
+			if (ModelState.IsValid)
+			{
+
 				try
 				{
 					string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
@@ -37,18 +39,18 @@ namespace API_Animalogistics.Controllers
 									numBytesRequested: 256 / 8));
 					usuario.Contraseña = hashed;
 
-                    //verifico que el correo no exista
-                    if (await _contexto.Usuarios.AnyAsync(x => x.Correo == usuario.Correo))
-                    {
-                        return BadRequest("El correo ya existe");
-                    }
-                    _contexto.Usuarios.Add(usuario);
-                    await _contexto.SaveChangesAsync();
+					//verifico que el correo no exista
+					if (await _contexto.Usuarios.AnyAsync(x => x.Correo == usuario.Correo))
+					{
+						return BadRequest("El correo ya existe");
+					}
+					_contexto.Usuarios.Add(usuario);
+					await _contexto.SaveChangesAsync();
 
 					if (usuario.FotoFile != null && usuario.Id > 0)
 					{
 						string PathData = _config["Data:usuarioImg"];
-						
+
 						/* if (!Directory.Exists(PathData))
 						{
 							Directory.CreateDirectory(path);
@@ -62,40 +64,43 @@ namespace API_Animalogistics.Controllers
 						{
 							usuario.FotoFile.CopyTo(stream);
 						}
-                        _contexto.Usuarios.Update(usuario);
+						_contexto.Usuarios.Update(usuario);
 
-                        await _contexto.SaveChangesAsync();
+						await _contexto.SaveChangesAsync();
 						//repositorioUsuario.Modificacion(u);
 					}
-					
+
 					return Ok(usuario);
 				}
 				catch (Exception ex)
 				{
 					return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message + "\n" + ex.InnerException);
 				}
-			}else{
-					return BadRequest("campos invalidos" + "\n" + ModelState);
-					
 			}
-			
-		
+			else
+			{
+				return BadRequest("campos invalidos" + "\n" + ModelState);
+
+			}
+
+
 		}
 
 
 
-        [HttpPost("usuariologin")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UsuarioLogin([FromForm] UsuarioLogin usuariologin){
+		[HttpPost("usuarioLogin")]
+		[AllowAnonymous]
+		public async Task<IActionResult> Login([FromForm] UsuarioLogin usuariologin)
+		{
 
 
-            if (ModelState.IsValid)
+			if (ModelState.IsValid)
 			{
 				try
 				{
 
 
-					
+
 
 					string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
 						password: usuariologin.Contraseña,
@@ -133,11 +138,13 @@ namespace API_Animalogistics.Controllers
 				}
 				catch (Exception ex)
 				{
-					return BadRequest("Error :"+ ex +"\nSe produjo un error al tratar de procesar la solicitud");
+					return BadRequest("Error :" + ex + "\nSe produjo un error al tratar de procesar la solicitud");
 				}
-			}else{
-					return BadRequest("campos invalidos" + "\n" + ModelState);
-					
+			}
+			else
+			{
+				return BadRequest("campos invalidos" + "\n" + ModelState);
+
 			}
 		}
 
@@ -145,12 +152,165 @@ namespace API_Animalogistics.Controllers
 
 
 
+		[HttpGet("usuarioObtenerPerfil")]
+		[Authorize]
+		public async Task<ActionResult<Usuario>> ObtenerPerfil()
+		{
+			try
+			{
+				var UsuarioLogeado = User.Identity.Name;
+
+				Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(x => x.Correo == UsuarioLogeado);
+
+				if (usuario == null)
+				{
+					// El perfil no se encontró en la base de datos
+					return NotFound("Perfil no encontrado");
+				}
+
+				return Ok(usuario);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+			}
+		}
+
+
+
+
+		[HttpPut("usuarioActualizarPerfil")]
+		[Authorize]
+		public async Task<IActionResult> ActualizarPerfil([FromForm] Usuario UsuarioEditado)
+		{
+			try
+			{
+
+				if (ModelState.IsValid)
+				{
+
+					var UsuarioLogeado = User.Identity.Name;
+
+					Usuario usuarioOriginal = await _contexto.Usuarios.SingleOrDefaultAsync(x => x.Correo == UsuarioLogeado);
+
+
+					if (usuarioOriginal == null)
+					{
+						return NotFound("Usuario no encontrado");
+					}
+
+					if (!string.IsNullOrEmpty(UsuarioEditado.Contraseña))
+					{
+
+						UsuarioEditado.Contraseña = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+							password: UsuarioEditado.Contraseña,
+							salt: System.Text.Encoding.ASCII.GetBytes(_config["Salt"]),
+							prf: KeyDerivationPrf.HMACSHA1,
+							iterationCount: 1000,
+							numBytesRequested: 256 / 8));
+						usuarioOriginal.Contraseña = UsuarioEditado.Contraseña;
+					}
+
+					usuarioOriginal.Nombre = UsuarioEditado.Nombre;
+					usuarioOriginal.Apellido = UsuarioEditado.Apellido;
+					usuarioOriginal.DNI = UsuarioEditado.DNI;
+					usuarioOriginal.Telefono = UsuarioEditado.Telefono;
+					usuarioOriginal.Correo = UsuarioEditado.Correo;
+
+
+
+					_contexto.Usuarios.Update(usuarioOriginal);
+					await _contexto.SaveChangesAsync();
+					return Ok(usuarioOriginal);
+				}
+				else
+				{
+					return BadRequest("campos invalidos" + "\n" + ModelState);
+				}
+			}
+			catch (Exception ex)
+			{
+				return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+			}
+		}
 
 
 
 
 
+		[HttpPut("usuarioActualizarFotoPerfil")]
+		[Authorize]
+		public async Task<IActionResult> ActualizarFoto(IFormFile? Foto)
+		{
+			try
+			{
+				var UsuarioLogeado = User.Identity.Name;
+				Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(x => x.Correo == UsuarioLogeado);
+				if (usuario == null)
+				{
+					return NotFound("Usuario no encontrado");
+				}
+
+				string PathData = _config["Data:usuarioImg"];
+
+				if (Foto == null)
+				{ //la quiero borrar entonces le seteo una por default
+
+					
+					string pathCompleto = Path.Combine(PathData, "Default.jpg");
+					
+					
 
 
-    }
-}
+					string DirAvatar = "avatar_" + usuario.Id + Path.GetExtension(usuario.FotoUrl);
+					string DirAvatarCompleto = Path.Combine(PathData, DirAvatar);
+
+					Console.WriteLine(DirAvatarCompleto);
+					if (System.IO.File.Exists(DirAvatarCompleto))
+					{
+						System.IO.File.Delete(DirAvatarCompleto);
+					}
+
+
+					usuario.FotoUrl = pathCompleto;
+
+				}
+				else
+				{
+					
+					
+					string DirAvatarViejo = "avatar_" + usuario.Id + Path.GetExtension(usuario.FotoUrl);//avatar_8.jpeg
+					string pathCompletoViejo = Path.Combine(PathData, DirAvatarViejo);
+					if (System.IO.File.Exists(pathCompletoViejo))
+					{
+						System.IO.File.Delete(pathCompletoViejo);
+					}
+
+					
+					string fileName = "avatar_" + usuario.Id + Path.GetExtension(Foto.FileName);
+					
+					string pathCompleto = Path.Combine(PathData, fileName);
+					usuario.FotoUrl = pathCompleto;
+
+					
+					using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+					{
+						Foto.CopyTo(stream);
+					}
+
+				}
+				_contexto.Usuarios.Update(usuario);
+
+				await _contexto.SaveChangesAsync();
+
+				return Ok("Foto moficada correctamente");
+
+			}catch (Exception ex)
+			{
+				return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+			}
+		}
+
+
+	}
+	}

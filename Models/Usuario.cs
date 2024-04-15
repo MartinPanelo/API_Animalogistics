@@ -23,7 +23,7 @@ namespace API_Animalogistics.Models{
 		[Required(ErrorMessage = "La contraseña es obligatoria.")]
         public string? Contraseña { get; set; }
 		[DataType(DataType.EmailAddress, ErrorMessage = "El correo debe contener un formato valido.")]
-		[Required(ErrorMessage = "El corre es obligatorio.")]
+		[Required(ErrorMessage = "El correo es obligatorio.")]
 		public string? Correo { get; set; }  	
         public string? FotoUrl { get; set; } 
 

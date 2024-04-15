@@ -1,4 +1,6 @@
 using API_Animalogistics.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +13,9 @@ builder.WebHost.UseUrls("http://192.168.0.*:5014","http://localhost:5015");
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
