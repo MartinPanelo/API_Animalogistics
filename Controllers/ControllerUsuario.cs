@@ -1,19 +1,16 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using API_Animalogistics.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API_Animalogistics.Controllers
 {
 
-	[ApiController]
+    [ApiController]
 	[Route("[controller]")]
 	public class ControllerUsuario(DataContext _contexto, IConfiguration _config) : ControllerBase
 	{
@@ -110,6 +107,26 @@ namespace API_Animalogistics.Controllers
 						numBytesRequested: 256 / 8));
 
 					var p = await _contexto.Usuarios.FirstOrDefaultAsync(x => x.Correo == usuariologin.Correo);
+
+					IList<Permiso> permisos = await  _contexto.Permisos
+							.Join(
+								_contexto.Voluntarios,
+								permiso => permiso.VoluntarioId,
+								voluntario => voluntario.Id,
+								(permiso, voluntario) => new { Permiso = permiso, Voluntario = voluntario }
+							)
+							.Join(
+								_contexto.Usuarios,
+								x => x.Voluntario.UsuarioId,
+								usuario => usuario.Id,
+								(x, usuario) => new { x.Permiso, Usuario = usuario }
+							)
+							.Where(x => x.Usuario.Id == p.Id)
+							.Select(x => x.Permiso)
+							.ToListAsync();
+
+					
+					
 					if (p == null || p.Contraseña != hashed)
 					{
 						return BadRequest("Nombre de usuario y/o clave incorrecta");
@@ -123,8 +140,18 @@ namespace API_Animalogistics.Controllers
 
 						var claims = new List<Claim>
 						{
-							new Claim(ClaimTypes.Name, p.Correo)
+							new Claim(ClaimTypes.Name, p.Correo),
+							
+							//asisgnar los permisos revisando la tabla de permisos
 						};
+						// Agregar permisos como claims de tipo Role
+						foreach (var rol in permisos)
+						{
+							claims.Add(new Claim(ClaimTypes.Role, rol.Rol));
+						}
+
+
+
 
 						var token = new JwtSecurityToken(
 							issuer: _config["TokenAuthentication:Issuer"],
@@ -256,10 +283,10 @@ namespace API_Animalogistics.Controllers
 				if (Foto == null)
 				{ //la quiero borrar entonces le seteo una por default
 
-					
+
 					string pathCompleto = Path.Combine(PathData, "Default.jpg");
-					
-					
+
+
 
 
 					string DirAvatar = "avatar_" + usuario.Id + Path.GetExtension(usuario.FotoUrl);
@@ -277,8 +304,8 @@ namespace API_Animalogistics.Controllers
 				}
 				else
 				{
-					
-					
+
+
 					string DirAvatarViejo = "avatar_" + usuario.Id + Path.GetExtension(usuario.FotoUrl);//avatar_8.jpeg
 					string pathCompletoViejo = Path.Combine(PathData, DirAvatarViejo);
 					if (System.IO.File.Exists(pathCompletoViejo))
@@ -286,13 +313,13 @@ namespace API_Animalogistics.Controllers
 						System.IO.File.Delete(pathCompletoViejo);
 					}
 
-					
+
 					string fileName = "avatar_" + usuario.Id + Path.GetExtension(Foto.FileName);
-					
+
 					string pathCompleto = Path.Combine(PathData, fileName);
 					usuario.FotoUrl = pathCompleto;
 
-					
+
 					using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
 					{
 						Foto.CopyTo(stream);
@@ -305,7 +332,8 @@ namespace API_Animalogistics.Controllers
 
 				return Ok("Foto moficada correctamente");
 
-			}catch (Exception ex)
+			}
+			catch (Exception ex)
 			{
 				return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
 			}
@@ -313,4 +341,4 @@ namespace API_Animalogistics.Controllers
 
 
 	}
-	}
+}
