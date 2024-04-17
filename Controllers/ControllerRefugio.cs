@@ -1,11 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using API_Animalogistics.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace API_Animalogistics.Controllers
 {
@@ -146,7 +142,7 @@ namespace API_Animalogistics.Controllers
 				var RefugioExistente = await _contexto.Refugios
 					/* .Include(r => r.Usuario) */
 					.AsNoTracking()
-					.FirstOrDefaultAsync(r => r.Id == refugioEditado.Id  && r.Usuario.Correo == usuarioActual);
+					.FirstOrDefaultAsync(r => r.Id == refugioEditado.Id && r.Usuario.Correo == usuarioActual);
 
 				if (RefugioExistente == null)
 				{
@@ -155,29 +151,6 @@ namespace API_Animalogistics.Controllers
 
 				refugioEditado.UsuarioId = RefugioExistente.UsuarioId;
 				refugioEditado.BannerUrl = RefugioExistente.BannerUrl;
-
-
-				/* // controlo si ademas de editar la informacion quiere editar el banner
-
-				if(refugioEditado.BannerFile != null)
-				{
-					string PathData = _config["Data:refugioImg"];
-
-					int ultimoIndiceDelPunto = refugioEditado.BannerUrl.LastIndexOf('.');
-					string nombreBannerUrlSinExtension = refugioEditado.BannerUrl.Substring(0, ultimoIndiceDelPunto);
-
-					var BannerUrl = nombreBannerUrlSinExtension + Path.GetExtension(refugioEditado.BannerFile.FileName);
-
-					string pathCompleto = PathData + BannerUrl;
-					refugioEditado.BannerUrl = pathCompleto;
-
-					using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
-					{
-						refugioEditado.BannerFile.CopyTo(stream);
-					}
-
-				} */
-				
 
 				// Actualizo el refugio
 				_contexto.Refugios.Update(refugioEditado);
@@ -189,7 +162,7 @@ namespace API_Animalogistics.Controllers
 			catch (Exception ex)
 			{
 
-				return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message + "\n" + ex.InnerException);	
+				return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message + "\n" + ex.InnerException);
 			}
 		}
 
@@ -198,7 +171,7 @@ namespace API_Animalogistics.Controllers
 
 		[HttpPut("refugioEditarBanner")]
 		[Authorize(Policy = "Administrador")]
-		public async Task<IActionResult> RefugioEditarBanner(IFormFile? Banner,[FromForm] int RefugioId)
+		public async Task<IActionResult> RefugioEditarBanner(IFormFile? Banner, [FromForm] int RefugioId)
 		{
 			try
 			{
@@ -216,18 +189,18 @@ namespace API_Animalogistics.Controllers
 					return NotFound("Refugio no encontrado");
 				}
 
-			
+
 
 				if (Banner == null)
 				{ //la quiero borrar entonces le seteo una por default
 
-				
+
 					if (System.IO.File.Exists(refugio.BannerUrl) && !refugio.BannerUrl.Contains("DefaultRefugio.jpg"))
 					{
 						System.IO.File.Delete(refugio.BannerUrl);
 					}
 
-					string pathBannerDefault = Path.Combine( _config["Data:refugioImg"], "DefaultRefugio.jpg");
+					string pathBannerDefault = Path.Combine(_config["Data:refugioImg"], "DefaultRefugio.jpg");
 					refugio.BannerUrl = pathBannerDefault;
 
 				}
@@ -235,19 +208,16 @@ namespace API_Animalogistics.Controllers
 				{
 
 
-					
+
 					if (System.IO.File.Exists(refugio.BannerUrl) && !refugio.BannerUrl.Contains("DefaultRefugio.jpg"))
 					{
 						System.IO.File.Delete(refugio.BannerUrl);
 					}
 
 
-
-				//	string fileBanner = "avatar_" + usuario.Id + Path.GetExtension(Foto.FileName);
-
 					var BannerUrl = Guid.NewGuid().ToString() + Path.GetExtension(Banner.FileName);
 
-					string pathCompleto = Path.Combine( _config["Data:refugioImg"], BannerUrl);
+					string pathCompleto = Path.Combine(_config["Data:refugioImg"], BannerUrl);
 					refugio.BannerUrl = pathCompleto;
 
 
