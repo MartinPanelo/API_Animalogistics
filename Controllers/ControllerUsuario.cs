@@ -284,7 +284,7 @@ namespace API_Animalogistics.Controllers
 				{ //la quiero borrar entonces le seteo una por default
 
 
-					string pathCompleto = Path.Combine(PathData, "Default.jpg");
+					string pathCompleto = Path.Combine(PathData, "DefaultUsuario.jpg");
 
 
 

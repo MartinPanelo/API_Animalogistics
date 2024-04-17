@@ -17,11 +17,12 @@ namespace API_Animalogistics.Models
         public Usuario? Usuario { get; set; }
         public string? Nombre { get; set; }
         public string? Direccion { get; set; }
+        [Required(ErrorMessage = "La descripción es obligatoria.")]
         public string? Descripcion { get; set; }
         public string? Telefono { get; set; }
-        public string? GPSY { get; set; }
-        public string? GPSX { get; set; }
-        public string? GPSRango { get; set; }
+        public double GPSY { get; set; }
+        public double GPSX { get; set; }
+        public int GPSRango { get; set; }
         public string? BannerUrl { get; set; }
         [NotMapped]
 		public IFormFile? BannerFile { get; set; }
