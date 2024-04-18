@@ -207,8 +207,6 @@ namespace API_Animalogistics.Controllers
         }
 
 
-
-
         [HttpPut("animalEditarDeRefugio")]
         [Authorize(Roles = "Administrador, Animales")]
         public async Task<IActionResult> AnimalEditarDeRefugio([FromForm] Animal animalEditado)
@@ -339,10 +337,125 @@ namespace API_Animalogistics.Controllers
                 return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message + "\n" + ex.InnerException);
             }
 
+        }
 
 
+        [HttpPut("animalEditarFoto")]
+		[Authorize(Roles = "Administrador, Animales")]
+		public async Task<IActionResult> AnimalEditarFoto(IFormFile? Foto, [FromForm] int AnimalId)
+		{
+			try
+			{
+				var UsuarioLogeado = User.Identity.Name;
+				Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(u => u.Correo == UsuarioLogeado);
+
+				Animal animal = await _contexto.Animales.SingleOrDefaultAsync(a => a.Id == AnimalId);
+
+				if (usuario == null)
+				{
+					return NotFound("Usuario no encontrado");
+				}
+				if (animal == null)
+				{
+					return NotFound("animal no encontrado");
+				}
+
+
+
+				if (Foto == null)
+				{ //la quiero borrar entonces le seteo una por default
+
+
+					if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
+					{
+						System.IO.File.Delete(animal.FotoUrl);
+					}
+
+					string pathBannerDefault = Path.Combine(_config["Data:animalImg"], "Defaultanimal.jpeg");
+					animal.FotoUrl = pathBannerDefault;
+
+				}
+				else
+				{
+
+
+
+					if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
+					{
+						System.IO.File.Delete(animal.FotoUrl);
+					}
+
+
+					var FotoUrl = Guid.NewGuid().ToString() + Path.GetExtension(Foto.FileName);
+
+					string pathCompleto = Path.Combine(_config["Data:animalImg"], FotoUrl);
+					animal.FotoUrl = pathCompleto;
+
+
+					using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+					{
+						Foto.CopyTo(stream);
+					}
+
+				}
+				//_contexto.Refugios.Update(refugio);
+
+				await _contexto.SaveChangesAsync();
+
+				return Ok("Banner moficado correctamente");
+
+			}
+			catch (Exception ex)
+			{
+				return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+			}
+		}
+
+
+        [HttpDelete("animalBorrarDeUsuario")]
+        [Authorize(Roles = "Administrador, Animales")]
+        public async Task<IActionResult> AnimalBorrarDeUsuario(int AnimalId)
+        {
+            try
+            {
+                var usuarioActual = User.Identity.Name;
+                // reviso que lo registre un usuario valido
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return NotFound("Usuario no encontrado.");
+                }
+
+                var animal = await _contexto.Animales
+                                    .Include(a => a.Usuario)
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(a => a.Id == AnimalId && a.RefugioId == null);
+
+
+                if (animal == null)
+                {
+                    return NotFound("No se encontro el animal.");
+                }
+
+                if (animal.UsuarioId != usuario.Id)
+                {
+                    return BadRequest("No puede borrar un animal que no le pertenece.");
+                }
+
+                _contexto.Animales.Remove(animal);
+                await _contexto.SaveChangesAsync();
+                return Ok("Animal borrado correctamente.");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
 
         }
+
+
 
 
 
