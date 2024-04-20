@@ -18,5 +18,6 @@ namespace API_Animalogistics.Models
         public DateTime FechaDesde { get; set; }
         public DateTime FechaHasta { get; set; }
         public string? Descripcion { get; set; }
+        public string? Estado { get; set; }
     }
 }

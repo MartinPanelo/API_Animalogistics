@@ -15,6 +15,8 @@ namespace API_Animalogistics.Models
 		public DbSet<Permiso> Permisos { get; set; }
 		public DbSet<Animal> Animales { get; set; }
 		public DbSet<Noticia> Noticias { get; set; }
+		public DbSet<Evento> Eventos { get; set; }
+		public DbSet<Tarea> Tareas { get; set; }
 
 	}
 }

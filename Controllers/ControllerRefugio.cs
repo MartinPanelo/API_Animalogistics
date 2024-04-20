@@ -14,6 +14,7 @@ namespace API_Animalogistics.Controllers
 		private readonly IConfiguration _config = _config;
 
 
+		//LISTAR REFUGIOS POR FILTRO DE DISTANCIA GPS
 
 		[HttpGet("refugioObtenerPorDueño")]// obtengo los refugios de los que soy dueño
 		[Authorize]
