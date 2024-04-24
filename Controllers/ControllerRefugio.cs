@@ -25,6 +25,16 @@ namespace API_Animalogistics.Controllers
 			{
 				var UsuarioLogeado = User.Identity.Name;
 
+				// reviso que el usuario exista
+				var usuario = await _contexto.Usuarios
+											  .AsNoTracking()
+											  .FirstOrDefaultAsync(u => u.Correo == UsuarioLogeado);
+				if (usuario == null)
+				{
+					// Si el usuario no existe
+					return NotFound("Usuario no encontrado.");
+				}
+
 				var refugios = await _contexto.Refugios
 											  /* .Include(r => r.Usuario) */ // con este include agrego el objeto usuario
 											  .Where(r => r.Usuario.Correo == UsuarioLogeado)
@@ -126,7 +136,7 @@ namespace API_Animalogistics.Controllers
 
 
 		[HttpPut("refugioEditarPerfil")]
-		[Authorize(Policy = "Administrador")]
+		[Authorize]
 		public async Task<IActionResult> RefugioEditarPerfil([FromForm] Refugio refugioEditado)
 		{
 			try
@@ -141,13 +151,13 @@ namespace API_Animalogistics.Controllers
 
 				// Verifico si el refugio pertenece al usuario actual
 				var RefugioExistente = await _contexto.Refugios
-					/* .Include(r => r.Usuario) */
+					.Include(r => r.Usuario)
 					.AsNoTracking()
 					.FirstOrDefaultAsync(r => r.Id == refugioEditado.Id && r.Usuario.Correo == usuarioActual);
 
 				if (RefugioExistente == null)
 				{
-					return NotFound("No se pudo encontrar el refugio o no tienes permiso para editarlo.");
+					return NotFound("No se pudo encontrar el refugio o este refugio no le pertenece.");
 				}
 
 				refugioEditado.UsuarioId = RefugioExistente.UsuarioId;
@@ -171,23 +181,29 @@ namespace API_Animalogistics.Controllers
 
 
 		[HttpPut("refugioEditarBanner")]
-		[Authorize(Policy = "Administrador")]
+		[Authorize]
 		public async Task<IActionResult> RefugioEditarBanner(IFormFile? Banner, [FromForm] int RefugioId)
 		{
 			try
 			{
 				var UsuarioLogeado = User.Identity.Name;
+
 				Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(u => u.Correo == UsuarioLogeado);
-
-				Refugio refugio = await _contexto.Refugios.SingleOrDefaultAsync(r => r.Id == RefugioId);
-
 				if (usuario == null)
 				{
 					return NotFound("Usuario no encontrado");
 				}
+
+				Refugio refugio = await _contexto.Refugios.SingleOrDefaultAsync(r => r.Id == RefugioId);
 				if (refugio == null)
 				{
 					return NotFound("Refugio no encontrado");
+				}
+
+				// Verifico si el refugio pertenece al usuario actual
+				if (refugio.UsuarioId != usuario.Id)
+				{
+					return BadRequest("No se puede editar el banner de un refugio que no le pertenece");
 				}
 
 

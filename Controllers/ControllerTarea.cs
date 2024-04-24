@@ -16,7 +16,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpGet("listarTareasDeUnRefugio")]// Se obtienen todas las tareas de un refugio
-        [Authorize(Roles = "Administrador, Tareas")]
+        [Authorize]
         public async Task<IActionResult> ListarTareasDeUnRefugio([FromForm] Refugio refugio)
         {
 
@@ -38,6 +38,16 @@ namespace API_Animalogistics.Controllers
                 if (Uvoluntario == null)
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                }
+
+                // reviso que el voluntario tenga el permiso de gestion de tareas
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Tareas");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar tareas.");
                 }
 
 
@@ -63,7 +73,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpPost("crearTarea")]// Se crea una nueva tarea
-        [Authorize(Roles = "Administrador, Tareas")]
+        [Authorize]
         public async Task<IActionResult> CrearTarea([FromForm] Tarea tarea)
         {
             try
@@ -98,6 +108,17 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
 
+                // reviso que tenga el permiso de gestion de tareas
+
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Tareas");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar tareas.");
+                }
+
 
                 _contexto.Tareas.Add(tarea);
                 _contexto.SaveChanges();
@@ -113,7 +134,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpPut("tareaEditar")]// Se edita una tarea
-        [Authorize(Roles = "Administrador, Tareas")]
+        [Authorize]
         public async Task<IActionResult> TareaEditar([FromForm] Tarea tarea)
         {
             try
@@ -147,6 +168,19 @@ namespace API_Animalogistics.Controllers
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
+
+
+                // reviso que tenga el permiso de gestion de tareas
+
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Tareas");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar tareas.");
+                }
+
                 var tareaActual = await _contexto.Tareas
                                               .AsNoTracking()
                                               .Include(e => e.Refugio)

@@ -76,7 +76,8 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpPost("crearEvento")]// Se crea un evento
-        [Authorize(Roles = "Administrador, Eventos")]
+        //[Authorize(Roles = "Administrador, Eventos")]
+        [Authorize]
         public async Task<IActionResult> CrearEvento([FromForm] Evento evento)
         {
             try
@@ -113,6 +114,16 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
 
+                // reviso que el voluntario tenga permiso para gestionar eventos
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Eventos");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar eventos.");
+                }
+
                 _contexto.Eventos.Add(evento);
                 await _contexto.SaveChangesAsync();
                 return Ok(evento);
@@ -127,7 +138,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpPut("actualizarEvento")]// Se actualiza un evento
-        [Authorize(Roles = "Administrador, Eventos")]
+        [Authorize]
         public async Task<IActionResult> ActualizarEvento([FromForm] Evento evento)
         {
             try
@@ -160,7 +171,7 @@ namespace API_Animalogistics.Controllers
                 }
 
 
-                //comprobar que el voluntario esta aditando una noticiaa de un refugio al que pertenece
+                //comprobar que el voluntario esta aditando un evento de un refugio al que pertenece
                 var Uvoluntario = await _contexto.Voluntarios
                                     .Include(a => a.Usuario)
                                     .AsNoTracking()
@@ -168,6 +179,16 @@ namespace API_Animalogistics.Controllers
                 if (Uvoluntario == null)
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                }
+
+                // reviso que el voluntario tenga permiso para gestionar eventos
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Eventos");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar eventos.");
                 }
 
                 _contexto.Eventos.Update(evento);
@@ -184,7 +205,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpDelete("eliminarEvento")]// Se elimina un evento
-        [Authorize(Roles = "Administrador, Eventos")]
+        [Authorize]
         public async Task<IActionResult> EliminarEvento([FromForm] Evento evento)
         {
             try
@@ -224,6 +245,16 @@ namespace API_Animalogistics.Controllers
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 } 
+
+                // reviso que el voluntario tenga permiso para gestionar eventos
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Eventos");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar eventos.");
+                }
 
                 _contexto.Eventos.Remove(evento);
                 await _contexto.SaveChangesAsync();

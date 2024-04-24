@@ -45,9 +45,9 @@ builder.Services.AddDbContext<DataContext>(
 
 builder.Services.AddAuthorization(options =>
 {
-	//options.AddPolicy("Empleado", policy => policy.RequireClaim(ClaimTypes.Role, "Administrador", "Empleado"));
-	options.AddPolicy("Administrador", policy => policy.RequireRole("Administrador"));
-	options.AddPolicy("Eventos", policy => policy.RequireRole("Eventos"));
+	//	options.AddPolicy("Empleado", policy => policy.RequireClaim(ClaimTypes.Role, "Administrador", "Empleado"));
+	//	options.AddPolicy("Administrador", policy => policy.RequireRole("Administrador"));
+	//	options.AddPolicy("Eventos", policy => policy.RequireRole("Eventos"));
 });
 
 var app = builder.Build();

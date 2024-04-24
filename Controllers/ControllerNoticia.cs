@@ -16,7 +16,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpPost("noticiaAgregar")]// Un usuario registra una noticia 
-        [Authorize(Roles = "Administrador, Noticias")]
+        [Authorize]
         public async Task<IActionResult> NoticiaAgregar([FromForm] Noticia noticia)
         {
 
@@ -52,6 +52,16 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
 
+                // reviso que el voluntario tenga permiso para gestionar noticias
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar noticias.");
+                }
+
 
                 var noticiaImagen = Guid.NewGuid().ToString() + Path.GetExtension(noticia.BannerFile.FileName);
 
@@ -80,7 +90,7 @@ namespace API_Animalogistics.Controllers
 
         //listar todas las noticias por categoria
         [HttpGet("noticiaListarPorCategoria")]
-        [Authorize(Roles = "Administrador, Noticias")]
+        [Authorize]
         public async Task<IActionResult> NoticiaListarPorCategoria([FromForm] string categoria)
         {
             try
@@ -105,7 +115,7 @@ namespace API_Animalogistics.Controllers
 
         //listar todas las noticias por categoria de un refugio
         [HttpGet("noticiaListarPorRefugio")]
-        [Authorize(Roles = "Administrador, Noticias")]
+        [Authorize]
         public async Task<IActionResult> NoticiaListarPorRefugio([FromForm] int refugioId)
         {
             try
@@ -157,7 +167,7 @@ namespace API_Animalogistics.Controllers
 
         //Editar una noticia
         [HttpPut("noticiaEditar")]
-        [Authorize(Roles = "Administrador, Noticias")]
+        [Authorize]
         public async Task<IActionResult> NoticiaEditar([FromForm] Noticia noticia)
         {
             try
@@ -174,6 +184,15 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Usuario no encontrado.");
                 }
 
+                //Comprobar que el refugio exista
+                var refugio = await _contexto.Refugios
+                                              .Include(e => e.Usuario)
+                                              .SingleOrDefaultAsync(e => e.Id == noticia.RefugioId);
+                if (refugio == null)
+                {
+                    return BadRequest("Refugio no encontrado.");
+                }
+
                 //comprobar que el voluntario esta aditando una noticiaa de un refugio al que pertenece                
                 var voluntario = await _contexto.Voluntarios.
                                               Include(e => e.Refugio)
@@ -181,6 +200,17 @@ namespace API_Animalogistics.Controllers
                 if (voluntario == null)
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                }
+
+                
+                // reviso que el voluntario tenga permiso para gestionar noticias
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar noticias.");
                 }
 
 
@@ -194,8 +224,7 @@ namespace API_Animalogistics.Controllers
                     return NotFound("Noticia no encontrada.");
                 }
 
-                // noticia.BannerUrl = noticiaActual.BannerUrl; // no viene del front ??
-
+             
                 _contexto.Noticias.Update(noticia);
                 await _contexto.SaveChangesAsync();
                 return Ok(noticia);
@@ -211,7 +240,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpPut("noticiaEditarBanner")]
-        [Authorize(Roles = "Administrador, Noticias")]
+        [Authorize]
         public async Task<IActionResult> NoticiaEditarBanner(IFormFile? Banner, [FromForm] int NoticiaId)
         {
             try
@@ -228,6 +257,34 @@ namespace API_Animalogistics.Controllers
                 if (noticia == null)
                 {
                     return NotFound("noticia no encontrada");
+                }
+
+               
+                var refugio = await _contexto.Refugios
+                                              .Include(e => e.Usuario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(r => r.Id == noticia.RefugioId);
+                if (refugio == null)
+                {
+                    return BadRequest("Refugio no encontrado.");
+                }
+                // reviso que el usuario es voluntario de este refugio
+
+                var voluntario = await _contexto.Voluntarios.
+                                              Include(e => e.Refugio)
+                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == refugio.Id);
+                if (voluntario == null)
+                {
+                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                }
+                // reviso que el voluntario tenga permiso para gestionar noticias
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar noticias.");
                 }
 
 
@@ -285,7 +342,7 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpDelete("noticiaEliminar")]
-        [Authorize(Roles = "Administrador, Noticias")]
+        [Authorize]
         public async Task<IActionResult> NoticiaEliminar([FromForm] int NoticiaId)
         {
             try
@@ -318,6 +375,16 @@ namespace API_Animalogistics.Controllers
                 if (voluntario == null)
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                }
+
+                // reviso que el voluntario tenga permiso para gestionar noticias
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar noticias.");
                 }
 
                 if (System.IO.File.Exists(noticiaActual.BannerUrl))

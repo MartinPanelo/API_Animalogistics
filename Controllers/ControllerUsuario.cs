@@ -108,7 +108,8 @@ namespace API_Animalogistics.Controllers
 
 					var p = await _contexto.Usuarios.FirstOrDefaultAsync(x => x.Correo == usuariologin.Correo);
 
-					IList<Permiso> permisos = await  _contexto.Permisos
+
+					/* IList<Permiso> permisos = await  _contexto.Permisos
 							.Join(
 								_contexto.Voluntarios,
 								permiso => permiso.VoluntarioId,
@@ -123,7 +124,7 @@ namespace API_Animalogistics.Controllers
 							)
 							.Where(x => x.Usuario.Id == p.Id)
 							.Select(x => x.Permiso)
-							.ToListAsync();
+							.ToListAsync(); */
 
 					
 					
@@ -145,10 +146,10 @@ namespace API_Animalogistics.Controllers
 							//asisgnar los permisos revisando la tabla de permisos
 						};
 						// Agregar permisos como claims de tipo Role
-						foreach (var rol in permisos)
+					/* 	foreach (var rol in permisos)
 						{
 							claims.Add(new Claim(ClaimTypes.Role, rol.Rol));
-						}
+						} */
 
 
 
