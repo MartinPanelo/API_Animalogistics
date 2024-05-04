@@ -29,12 +29,12 @@ namespace API_Animalogistics.Controllers
 				try
 				{
 					string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-									password: usuario.Contraseña, // no es nulo por que ModelState.IsValid exige que el campo no sea nulo
+									password: usuario.Contrasena, // no es nulo por que ModelState.IsValid exige que el campo no sea nulo
 									salt: System.Text.Encoding.ASCII.GetBytes(_config["Salt"]),
 									prf: KeyDerivationPrf.HMACSHA1,
 									iterationCount: 1000,
 									numBytesRequested: 256 / 8));
-					usuario.Contraseña = hashed;
+					usuario.Contrasena = hashed;
 
 					//verifico que el correo no exista
 					if (await _contexto.Usuarios.AnyAsync(x => x.Correo == usuario.Correo))
@@ -100,7 +100,7 @@ namespace API_Animalogistics.Controllers
 
 
 					string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-						password: usuariologin.Contraseña,
+						password: usuariologin.Contrasena,
 						salt: System.Text.Encoding.ASCII.GetBytes(_config["Salt"]),
 						prf: KeyDerivationPrf.HMACSHA1,
 						iterationCount: 1000,
@@ -128,7 +128,7 @@ namespace API_Animalogistics.Controllers
 
 					
 					
-					if (p == null || p.Contraseña != hashed)
+					if (p == null || p.Contrasena != hashed)
 					{
 						return BadRequest("Nombre de usuario y/o clave incorrecta");
 					}
@@ -227,16 +227,16 @@ namespace API_Animalogistics.Controllers
 						return NotFound("Usuario no encontrado");
 					}
 
-					if (!string.IsNullOrEmpty(UsuarioEditado.Contraseña))
+					if (!string.IsNullOrEmpty(UsuarioEditado.Contrasena))
 					{
 
-						UsuarioEditado.Contraseña = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-							password: UsuarioEditado.Contraseña,
+						UsuarioEditado.Contrasena = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+							password: UsuarioEditado.Contrasena,
 							salt: System.Text.Encoding.ASCII.GetBytes(_config["Salt"]),
 							prf: KeyDerivationPrf.HMACSHA1,
 							iterationCount: 1000,
 							numBytesRequested: 256 / 8));
-						usuarioOriginal.Contraseña = UsuarioEditado.Contraseña;
+						usuarioOriginal.Contrasena = UsuarioEditado.Contrasena;
 					}
 
 					usuarioOriginal.Nombre = UsuarioEditado.Nombre;
