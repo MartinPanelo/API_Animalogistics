@@ -16,6 +16,46 @@ namespace API_Animalogistics.Controllers
 
 		//LISTAR REFUGIOS POR FILTRO DE DISTANCIA GPS
 
+
+
+		[HttpGet("refugioLista")]// obtengo todos los refugios
+		[Authorize]
+		public async Task<IActionResult> RefugioLista()
+		{
+
+			try
+			{
+				var UsuarioLogeado = User.Identity.Name;
+
+				// reviso que el usuario exista
+				var usuario = await _contexto.Usuarios
+											  .AsNoTracking()
+											  .FirstOrDefaultAsync(u => u.Correo == UsuarioLogeado);
+				if (usuario == null)
+				{
+					// Si el usuario no existe
+					return NotFound("Usuario no encontrado.");
+				}
+
+				var refugios = await _contexto.Refugios
+											  .Include(r => r.Usuario) // con este include agrego el objeto usuario											 
+											  .ToListAsync();
+
+				if (refugios == null || refugios.Count == 0)
+				{
+					// Si no se encuentran refugios
+					return NotFound("No se encontraron refugios.");
+				}
+
+				return Ok(refugios);
+			}
+			catch (Exception ex)
+			{
+				// mensaje informativo en caso de error
+				return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+			}
+		}
+
 		[HttpGet("refugioObtenerPorDueño")]// obtengo los refugios de los que soy dueño
 		[Authorize]
 		public async Task<IActionResult> RefugiosPorDueño()
