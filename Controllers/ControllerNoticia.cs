@@ -91,13 +91,14 @@ namespace API_Animalogistics.Controllers
         //listar todas las noticias por categoria
         [HttpGet("noticiaListarPorCategoria")]
         [Authorize]
-        public async Task<IActionResult> NoticiaListarPorCategoria([FromForm] string categoria)
+        public async Task<IActionResult> NoticiaListarPorCategoria(string categoria)
         {
             try
             {
                 var noticia = await _contexto.Noticias
-                                              .Include(e => e.Refugio)
                                               .Include(e => e.Voluntario)
+                                              .Include(e => e.Voluntario.Usuario)
+                                              .Include(e => e.Refugio)
                                               .Where(e => e.Categoria == categoria)
                                               .ToListAsync();
                 if (noticia == null || !noticia.Any())
@@ -112,6 +113,32 @@ namespace API_Animalogistics.Controllers
             }
         }
 
+
+        //listar todas las noticias
+        [HttpGet("noticiaLista")]
+        [Authorize]
+        public async Task<IActionResult> NoticiaListar()
+        {
+            try
+            {
+                var noticia = await _contexto.Noticias
+                                              
+                                              .Include(e => e.Voluntario)
+                                              .Include(e => e.Voluntario.Usuario)
+                                              .Include(e => e.Refugio)
+                                            
+                                              .ToListAsync();
+                if (noticia == null || !noticia.Any())
+                {
+                    return NotFound("No se encontraron noticias.");
+                }
+                return Ok(noticia);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+            }
+        }
 
         //listar todas las noticias por categoria de un refugio
         [HttpGet("noticiaListarPorRefugio")]
