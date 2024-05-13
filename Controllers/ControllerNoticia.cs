@@ -14,84 +14,10 @@ namespace API_Animalogistics.Controllers
         private readonly IConfiguration _config = _config;
 
 
-
-        [HttpPost("noticiaAgregar")]// Un usuario registra una noticia 
-        [Authorize]
-        public async Task<IActionResult> NoticiaAgregar([FromForm] Noticia noticia)
-        {
-
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                // reviso que lo registre un usuario valido
-                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
-
-                if (usuario == null)
-                {
-                    return BadRequest("Usuario no encontrado.");
-                }
-
-                // revisar que el refugio exista
-                var refugio = await _contexto.Refugios
-                                              .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.RefugioId);
-                if (refugio == null)
-                {
-                    return BadRequest("Refugio no encontrado.");
-                }
-
-                // revisar que el voluntario exista en este refugio
-                var voluntario = await _contexto.Voluntarios
-                                              .Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.VoluntarioId && e.RefugioId == refugio.Id);
-                if (voluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
-
-                // reviso que el voluntario tenga permiso para gestionar noticias
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar noticias.");
-                }
-
-
-                var noticiaImagen = Guid.NewGuid().ToString() + Path.GetExtension(noticia.BannerFile.FileName);
-
-                string pathCompleto = _config["Data:noticiaImg"] + noticiaImagen;
-
-                noticia.BannerUrl = pathCompleto;
-                //   noticia.VoluntarioId = usuario.Id;
-
-                using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
-                {
-                    noticia.BannerFile.CopyTo(stream);
-                }
-                _contexto.Noticias.Add(noticia);
-                _contexto.SaveChanges();
-                return Ok(noticia);
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
-            }
-
-        }
-
-
-
         //listar todas las noticias por categoria
         [HttpGet("noticiaListarPorCategoria")]
         [Authorize]
-        public async Task<IActionResult> NoticiaListarPorCategoria(string categoria)
+        public async Task<IActionResult> NoticiaListarPorCategoria([FromForm] string categoria)
         {
             try
             {
@@ -140,21 +66,21 @@ namespace API_Animalogistics.Controllers
             }
         }
 
-        //listar todas las noticias por categoria de un refugio
+        //listar todas las noticias de un refugio
         [HttpGet("noticiaListarPorRefugio")]
         [Authorize]
-        public async Task<IActionResult> NoticiaListarPorRefugio([FromForm] int refugioId)
+        public async Task<IActionResult> NoticiaListarPorRefugio(int refugioId)
         {
             try
             {
 
                 //Comprobar que el refugio exista
-                var refugio = await _contexto.Refugios
+                var refugio =  _contexto.Refugios
                                               .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == refugioId);
+                                              .FirstOrDefault(e => e.Id == refugioId);
                 if (refugio == null)
                 {
-                    return BadRequest("Refugio no encontrado.");
+                    return BadRequest("Refugio no encontrado."+ refugioId);
                 }
                 // revisar que el usuario exista 
                 var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
@@ -164,14 +90,15 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Usuario no encontrado.");
                 }
 
-                //comprobar que el voluntario esta viendo noticias de un refugio al que pertenece                
+            /*     //comprobar que el voluntario esta viendo noticias de un refugio al que pertenece                
                 var voluntario = await _contexto.Voluntarios.
                                               Include(e => e.Refugio)
                                               .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == refugioId);
                 if (voluntario == null)
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
+                } */
+
 
 
                 var noticia = await _contexto.Noticias
@@ -191,6 +118,130 @@ namespace API_Animalogistics.Controllers
             }
         }
 
+
+        //listar todas las noticias por categoria de un refugio
+        [HttpGet("noticiaListarPorRefugioPorCategoria")]
+        [Authorize]
+        public async Task<IActionResult> NoticiaListarPorRefugioPorCategoria(string categoria, int refugioId)
+        {
+            try
+            {
+
+                //Comprobar que el refugio exista
+                var refugio = await _contexto.Refugios
+                                              .Include(e => e.Usuario)
+                                              .SingleOrDefaultAsync(e => e.Id == refugioId );
+                if (refugio == null)
+                {
+                    return BadRequest("Refugio no encontrado.");
+                }
+                // revisar que el usuario exista 
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return BadRequest("Usuario no encontrado.");
+                }
+
+              /*   //comprobar que el voluntario esta viendo noticias de un refugio al que pertenece                
+                var voluntario = await _contexto.Voluntarios.
+                                              Include(e => e.Refugio)
+                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == refugioId);
+                if (voluntario == null)
+                {
+                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                }
+ */
+
+                var noticia = await _contexto.Noticias
+                                              .Include(e => e.Refugio)
+                                              .Include(e => e.Voluntario)
+                                              .Where(e => e.RefugioId == refugioId
+                                              && e.Categoria == categoria)
+                                              .ToListAsync();
+                if (noticia == null || !noticia.Any())
+                {
+                    return NotFound("No se encontraron noticias para este refugio.");
+                }
+                return Ok(noticia);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+            }
+        }
+
+
+        [HttpPost("noticiaAgregar")]// Un usuario registra una noticia 
+        [Authorize]
+        public async Task<IActionResult> NoticiaAgregar([FromForm] Noticia noticia)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                // reviso que lo registre un usuario valido
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return BadRequest("Usuario no encontrado.");
+                }
+
+                // revisar que el refugio exista
+                var refugio = await _contexto.Refugios
+                                              .Include(e => e.Usuario)
+                                              .SingleOrDefaultAsync(e => e.Id == noticia.RefugioId );
+                if (refugio == null)
+                {
+                    return BadRequest("Refugio no encontrado.");
+                }
+
+                // revisar que el voluntario exista en este refugio
+                var voluntario = await _contexto.Voluntarios
+                                              .Include(e => e.Refugio)
+                                              .SingleOrDefaultAsync(e => e.Id == noticia.VoluntarioId && e.RefugioId == refugio.Id);
+                if (voluntario == null)
+                {
+                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                }
+
+                // reviso que el voluntario tenga permiso para gestionar noticias
+                var permiso = await _contexto.Permisos
+                                              .Include(e => e.Voluntario)
+                                              .AsNoTracking()
+                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
+                if (permiso == null)
+                {
+                    return BadRequest("No tiene permiso para gestionar noticias.");
+                }
+
+
+                var noticiaImagen = Guid.NewGuid().ToString() + Path.GetExtension(noticia.BannerFile.FileName);
+
+                string pathCompleto = _config["Data:noticiaImg"] + noticiaImagen;
+
+                noticia.BannerUrl = pathCompleto;
+                //   noticia.VoluntarioId = usuario.Id;
+
+                using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                {
+                    noticia.BannerFile.CopyTo(stream);
+                }
+                _contexto.Noticias.Add(noticia);
+                _contexto.SaveChanges();
+                return Ok(noticia);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+            }
+
+        }
 
         //Editar una noticia
         [HttpPut("noticiaEditar")]
