@@ -23,12 +23,12 @@ namespace API_Animalogistics.Models
         public string? Nombre { get; set; }
         public string? Edad { get; set; }
         public string? Tipo { get; set; }
-        public string? Tamaño { get; set; }
+        public string? Tamano { get; set; }
         public bool Collar { get; set; }
         public string? Genero { get; set; }
         public string? Comentarios { get; set; }
-        public double GPSY { get; set; }
-        public double GPSX { get; set; }
+        public string? GPSY { get; set; }
+        public string? GPSX { get; set; }
         public string? Estado { get; set; }
         public string? FotoUrl { get; set; }
         [NotMapped]

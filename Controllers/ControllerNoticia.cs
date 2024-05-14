@@ -17,7 +17,7 @@ namespace API_Animalogistics.Controllers
         //listar todas las noticias por categoria
         [HttpGet("noticiaListarPorCategoria")]
         [Authorize]
-        public async Task<IActionResult> NoticiaListarPorCategoria([FromForm] string categoria)
+        public async Task<IActionResult> NoticiaListarPorCategoria(string categoria)
         {
             try
             {

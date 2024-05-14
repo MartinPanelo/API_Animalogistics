@@ -34,20 +34,25 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Usuario no encontrado.");
                 }
 
-
-                var animalImagen = Guid.NewGuid().ToString() + Path.GetExtension(animal.FotoFile.FileName);
-
+                Console.WriteLine(animal.GPSX + " | " + animal.GPSY);
 
 
-                string pathCompleto = _config["Data:animalImg"] + animalImagen;
-
-                animal.FotoUrl = pathCompleto;
                 animal.UsuarioId = usuario.Id;
 
-                using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                if (animal.FotoFile != null)
                 {
-                    animal.FotoFile.CopyTo(stream);
+                    var animalImagen = Guid.NewGuid().ToString() + Path.GetExtension(animal.FotoFile.FileName);
+
+                    string pathCompleto = _config["Data:animalImg"] + animalImagen;
+
+                    animal.FotoUrl = pathCompleto;
+                    using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                    {
+                        animal.FotoFile.CopyTo(stream);
+                    }
                 }
+
+
                 _contexto.Animales.Add(animal);
                 _contexto.SaveChanges();
                 return Ok(animal);
@@ -56,6 +61,7 @@ namespace API_Animalogistics.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
             }
 
@@ -312,7 +318,7 @@ namespace API_Animalogistics.Controllers
                                     .AsNoTracking()
                                     .FirstOrDefaultAsync(a => a.Id == animalEditado.Id && a.RefugioId == null);
 
-                
+
 
 
                 if (animalExiste != null)
@@ -341,75 +347,75 @@ namespace API_Animalogistics.Controllers
 
 
         [HttpPut("animalEditarFoto")]
-		[Authorize(Roles = "Administrador, Animales")]
-		public async Task<IActionResult> AnimalEditarFoto(IFormFile? Foto, [FromForm] int AnimalId)
-		{
-			try
-			{
-				var UsuarioLogeado = User.Identity.Name;
-				Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(u => u.Correo == UsuarioLogeado);
+        [Authorize(Roles = "Administrador, Animales")]
+        public async Task<IActionResult> AnimalEditarFoto(IFormFile? Foto, [FromForm] int AnimalId)
+        {
+            try
+            {
+                var UsuarioLogeado = User.Identity.Name;
+                Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(u => u.Correo == UsuarioLogeado);
 
-				Animal animal = await _contexto.Animales.SingleOrDefaultAsync(a => a.Id == AnimalId);
+                Animal animal = await _contexto.Animales.SingleOrDefaultAsync(a => a.Id == AnimalId);
 
-				if (usuario == null)
-				{
-					return NotFound("Usuario no encontrado");
-				}
-				if (animal == null)
-				{
-					return NotFound("animal no encontrado");
-				}
-
-
-
-				if (Foto == null)
-				{ //la quiero borrar entonces le seteo una por default
-
-
-					if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
-					{
-						System.IO.File.Delete(animal.FotoUrl);
-					}
-
-					string pathBannerDefault = Path.Combine(_config["Data:animalImg"], "Defaultanimal.jpeg");
-					animal.FotoUrl = pathBannerDefault;
-
-				}
-				else
-				{
+                if (usuario == null)
+                {
+                    return NotFound("Usuario no encontrado");
+                }
+                if (animal == null)
+                {
+                    return NotFound("animal no encontrado");
+                }
 
 
 
-					if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
-					{
-						System.IO.File.Delete(animal.FotoUrl);
-					}
+                if (Foto == null)
+                { //la quiero borrar entonces le seteo una por default
 
 
-					var FotoUrl = Guid.NewGuid().ToString() + Path.GetExtension(Foto.FileName);
+                    if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
+                    {
+                        System.IO.File.Delete(animal.FotoUrl);
+                    }
 
-					string pathCompleto = Path.Combine(_config["Data:animalImg"], FotoUrl);
-					animal.FotoUrl = pathCompleto;
+                    string pathBannerDefault = Path.Combine(_config["Data:animalImg"], "Defaultanimal.jpeg");
+                    animal.FotoUrl = pathBannerDefault;
+
+                }
+                else
+                {
 
 
-					using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
-					{
-						Foto.CopyTo(stream);
-					}
 
-				}
-				//_contexto.Refugios.Update(refugio);
+                    if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
+                    {
+                        System.IO.File.Delete(animal.FotoUrl);
+                    }
 
-				await _contexto.SaveChangesAsync();
 
-				return Ok("Banner moficado correctamente");
+                    var FotoUrl = Guid.NewGuid().ToString() + Path.GetExtension(Foto.FileName);
 
-			}
-			catch (Exception ex)
-			{
-				return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
-			}
-		}
+                    string pathCompleto = Path.Combine(_config["Data:animalImg"], FotoUrl);
+                    animal.FotoUrl = pathCompleto;
+
+
+                    using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                    {
+                        Foto.CopyTo(stream);
+                    }
+
+                }
+                //_contexto.Refugios.Update(refugio);
+
+                await _contexto.SaveChangesAsync();
+
+                return Ok("Banner moficado correctamente");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        }
 
 
         [HttpDelete("animalBorrarDeUsuario")]
