@@ -24,7 +24,7 @@ namespace API_Animalogistics.Controllers
                 var noticia = await _contexto.Noticias
                                               .Include(e => e.Voluntario)
                                               .Include(e => e.Voluntario.Usuario)
-                                              .Include(e => e.Refugio)
+                                           /*    .Include(e => e.Refugio) */
                                               .Where(e => e.Categoria == categoria)
                                               .ToListAsync();
                 if (noticia == null || !noticia.Any())
@@ -51,7 +51,8 @@ namespace API_Animalogistics.Controllers
                                               
                                               .Include(e => e.Voluntario)
                                               .Include(e => e.Voluntario.Usuario)
-                                              .Include(e => e.Refugio)
+                                              .Include(e => e.Voluntario.Refugio)
+                                              /* .Include(e => e.Refugio) */
                                             
                                               .ToListAsync();
                 if (noticia == null || !noticia.Any())
@@ -102,9 +103,9 @@ namespace API_Animalogistics.Controllers
 
 
                 var noticia = await _contexto.Noticias
-                                              .Include(e => e.Refugio)
+                                            /*   .Include(e => e.Refugio) */
                                               .Include(e => e.Voluntario)
-                                              .Where(e => e.RefugioId == refugioId)
+                                              .Where(e => e.Voluntario.RefugioId == refugioId)
                                               .ToListAsync();
                 if (noticia == null || !noticia.Any())
                 {
@@ -154,9 +155,9 @@ namespace API_Animalogistics.Controllers
  */
 
                 var noticia = await _contexto.Noticias
-                                              .Include(e => e.Refugio)
+                                              .Include(e => e.Voluntario.Refugio)
                                               .Include(e => e.Voluntario)
-                                              .Where(e => e.RefugioId == refugioId
+                                              .Where(e => e.Voluntario.RefugioId == refugioId
                                               && e.Categoria == categoria)
                                               .ToListAsync();
                 if (noticia == null || !noticia.Any())
@@ -194,7 +195,7 @@ namespace API_Animalogistics.Controllers
                 // revisar que el refugio exista
                 var refugio = await _contexto.Refugios
                                               .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.RefugioId );
+                                              .SingleOrDefaultAsync(e => e.Id == noticia.Voluntario.RefugioId );
                 if (refugio == null)
                 {
                     return BadRequest("Refugio no encontrado.");
@@ -265,7 +266,7 @@ namespace API_Animalogistics.Controllers
                 //Comprobar que el refugio exista
                 var refugio = await _contexto.Refugios
                                               .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.RefugioId);
+                                              .SingleOrDefaultAsync(e => e.Id == noticia.Voluntario.RefugioId);
                 if (refugio == null)
                 {
                     return BadRequest("Refugio no encontrado.");
@@ -274,7 +275,7 @@ namespace API_Animalogistics.Controllers
                 //comprobar que el voluntario esta aditando una noticiaa de un refugio al que pertenece                
                 var voluntario = await _contexto.Voluntarios.
                                               Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == noticia.RefugioId);
+                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == noticia.Voluntario.RefugioId);
                 if (voluntario == null)
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
@@ -294,7 +295,7 @@ namespace API_Animalogistics.Controllers
 
                 var noticiaActual = await _contexto.Noticias
                                               .AsNoTracking()
-                                              .Include(e => e.Refugio)
+                                              .Include(e => e.Voluntario.Refugio)
                                               .Include(e => e.Voluntario)
                                               .SingleOrDefaultAsync(e => e.Id == noticia.Id);
                 if (noticiaActual == null)
@@ -341,7 +342,7 @@ namespace API_Animalogistics.Controllers
                 var refugio = await _contexto.Refugios
                                               .Include(e => e.Usuario)
                                               .AsNoTracking()
-                                              .FirstOrDefaultAsync(r => r.Id == noticia.RefugioId);
+                                              .FirstOrDefaultAsync(r => r.Id == noticia.Voluntario.RefugioId);
                 if (refugio == null)
                 {
                     return BadRequest("Refugio no encontrado.");
@@ -439,7 +440,7 @@ namespace API_Animalogistics.Controllers
 
                 var noticiaActual = await _contexto.Noticias
 
-                                                              .Include(e => e.Refugio)
+                                                              .Include(e => e.Voluntario.Refugio)
                                                               .Include(e => e.Voluntario)
                                                               .SingleOrDefaultAsync(e => e.Id == NoticiaId);
                 if (noticiaActual == null)
@@ -449,7 +450,7 @@ namespace API_Animalogistics.Controllers
                 //comprobar que el voluntario esta borrand una noticiaa de un refugio al que pertenece                
                 var voluntario = await _contexto.Voluntarios.
                                               Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == noticiaActual.RefugioId);
+                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == noticiaActual.Voluntario.RefugioId);
                 if (voluntario == null)
                 {
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");

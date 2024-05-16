@@ -20,11 +20,8 @@ namespace API_Animalogistics.Models
         public int RefugioId { get; set; }
         [ForeignKey(nameof(RefugioId))]
         public Refugio? Refugio { get; set; }
-
-        public string? Cargo { get; set; }
-
-        public TimeSpan? HorarioDesde { get; set; }
-        public TimeSpan? HorarioHasta { get; set; }
+        public string? Tarea { get; set; }
+         public string? Descripcion { get; set; }
 
 
 

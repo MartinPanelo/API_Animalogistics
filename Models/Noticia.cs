@@ -11,10 +11,10 @@ namespace API_Animalogistics.Models
         [Display(Name = "Identificador")]
         public int Id { get; set; }
 
-        [Display(Name = "Refugio")]
+       /*  [Display(Name = "Refugio")]
         public int? RefugioId { get; set; }
         [ForeignKey(nameof(RefugioId))]
-        public Refugio? Refugio { get; set; }
+        public Refugio? Refugio { get; set; } */
 
         [Display(Name = "Voluntario")]
         public int VoluntarioId { get; set; }
