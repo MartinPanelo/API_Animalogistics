@@ -13,17 +13,41 @@ namespace API_Animalogistics.Controllers
 		private readonly DataContext _contexto = _contexto;
 		private readonly IConfiguration _config = _config;
 
+		[HttpGet("listarVoluntariadosDisponbilesDeUnRefugio")]
+        [Authorize]
+        public async Task<IActionResult> ListarVoluntariadosDisponbilesDeUnRefugio(int refugioId)
+        {
 
-        // obtengo todas los voluntariados disponibles de un refugio
-        // estan disponibles cuando el voluntario es null  NO SIRVE
+            try
+            {
+               
+                var voluntariados = await _contexto.Voluntarios
+                                              .Include(v => v.Tarea)
+                                              .Where(v => v.RefugioId == refugioId && v.Usuario == null)
+                                             
+                                              .ToListAsync();
+                if (voluntariados == null || !voluntariados.Any())
+                {
+                  
+                    return NotFound(new { mensaje ="No se encontraron voluntariados disponibles para este refugio."});
+                }
+                return Ok(voluntariados);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        }
+        
         [HttpPut("anotarseComoVoluntario")]
 		[Authorize]
-		public async Task<IActionResult> AnotarseComoVoluntario(int tareaId)
+		public async Task<IActionResult> AnotarseComoVoluntario(int voluntarioId)
 		{
 
 			try
 			{
-				Console.WriteLine("tareaId: " + tareaId);
+				
 				 var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
 
                 if (usuario == null)
@@ -31,25 +55,27 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Usuario no encontrado.");
                 }
                
-				var tarea = await _contexto.Tareas
-                                              .Include(v => v.Voluntario)
-											  .Include(v => v.Voluntario.Refugio)
-                                              .Where(v => v.Id == tareaId)										 
+				var voluntariado = await _contexto.Voluntarios    
+											  .Include(v => v.Refugio)                  
+                                              .Where(v => v.Id == voluntarioId)										 
 											  .FirstOrDefaultAsync();
 
-				if (tarea == null )
+              
+
+				if (voluntariado == null )
 				{
 					// Si no se encuentran refugios
-					return NotFound(new { mensaje = "No se encontro la tarea." });
+					return NotFound(new { mensaje = "No se encontro el voluntariado." });
 				}
 
-				tarea.Voluntario.Usuario = usuario;
+				voluntariado.Usuario = usuario;
+				
 
-
-				_contexto.Tareas.Update(tarea);
+               
+				_contexto.Voluntarios.Update(voluntariado);
 				_contexto.SaveChanges();
 
-				return Ok(tarea.Voluntario);
+				return Ok(voluntariado);
 			}
 			catch (Exception ex)
 			{
@@ -57,5 +83,6 @@ namespace API_Animalogistics.Controllers
 				return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
 			}
 		}
+
     }
 }

@@ -17,35 +17,11 @@ namespace API_Animalogistics.Controllers
         // Se obtienen todas las tareas disponibles de un refugio
         // una tarea esta disponible si no tiene un usuario como voluntario asociado
         // estas van a ser los voluntariados disponibles para que un usuario se haga voluntario de un refugio
-        [HttpGet("listarTareasDisponbilesDeUnRefugio")]
-        [Authorize]
-        public async Task<IActionResult> ListarTareasDisponbilesDeUnRefugio(int refugioId)
-        {
-
-            try
-            {
-               
-                var tareas = await _contexto.Tareas
-                                              .Include(e => e.Voluntario)
-                                              .Where(e => e.Voluntario.RefugioId == refugioId && e.Voluntario.Usuario == null)
-                                             
-                                              .ToListAsync();
-                if (tareas == null || !tareas.Any())
-                {
-                  
-                    return NotFound(new { mensaje ="No se encontraron tareas disponibles para este refugio."});
-                }
-                return Ok(tareas);
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
-            }
-        }
+        
 
 
 
+        
 /* 
         [HttpPost("crearTarea")]// Se crea una nueva tarea
         [Authorize]

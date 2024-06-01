@@ -24,6 +24,11 @@ namespace API_Animalogistics.Models
         [ForeignKey(nameof(RefugioId))]
         public Refugio? Refugio { get; set; }
 
+
+        [Display(Name = "Tarea")]
+        public int TareaId { get; set; }
+        [ForeignKey(nameof(TareaId))]
+        public Tarea? Tarea { get; set; }
 /* 
 
         
