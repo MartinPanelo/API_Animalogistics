@@ -114,7 +114,7 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
 
-                // reviso que el voluntario tenga permiso para gestionar eventos
+              /*   // reviso que el voluntario tenga permiso para gestionar eventos
                 var permiso = await _contexto.Permisos
                                               .Include(e => e.Voluntario)
                                               .AsNoTracking()
@@ -122,7 +122,7 @@ namespace API_Animalogistics.Controllers
                 if (permiso == null)
                 {
                     return BadRequest("No tiene permiso para gestionar eventos.");
-                }
+                } */
 
                 _contexto.Eventos.Add(evento);
                 await _contexto.SaveChangesAsync();
@@ -181,7 +181,7 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
 
-                // reviso que el voluntario tenga permiso para gestionar eventos
+             /*    // reviso que el voluntario tenga permiso para gestionar eventos
                 var permiso = await _contexto.Permisos
                                               .Include(e => e.Voluntario)
                                               .AsNoTracking()
@@ -189,7 +189,7 @@ namespace API_Animalogistics.Controllers
                 if (permiso == null)
                 {
                     return BadRequest("No tiene permiso para gestionar eventos.");
-                }
+                } */
 
                 _contexto.Eventos.Update(evento);
                 await _contexto.SaveChangesAsync();
@@ -246,7 +246,7 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 } 
 
-                // reviso que el voluntario tenga permiso para gestionar eventos
+             /*    // reviso que el voluntario tenga permiso para gestionar eventos
                 var permiso = await _contexto.Permisos
                                               .Include(e => e.Voluntario)
                                               .AsNoTracking()
@@ -255,7 +255,7 @@ namespace API_Animalogistics.Controllers
                 {
                     return BadRequest("No tiene permiso para gestionar eventos.");
                 }
-
+ */
                 _contexto.Eventos.Remove(evento);
                 await _contexto.SaveChangesAsync();
                 return Ok(evento);

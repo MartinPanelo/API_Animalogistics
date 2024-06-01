@@ -12,19 +12,25 @@ namespace API_Animalogistics.Models
         public int Id { get; set; }
 
         [Display(Name = "Voluntario")]
-        public int UsuarioId { get; set; }
+        public int? UsuarioId { get; set; }
         [ForeignKey(nameof(UsuarioId))]
         public Usuario? Usuario { get; set; }
+
+
+
 
         [Display(Name = "Refugio")]
         public int RefugioId { get; set; }
         [ForeignKey(nameof(RefugioId))]
         public Refugio? Refugio { get; set; }
-        public string? Tarea { get; set; }
-         public string? Descripcion { get; set; }
+
+/* 
+
+        
 
 
 
+ */
 
 
 

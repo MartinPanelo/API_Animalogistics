@@ -27,8 +27,8 @@ namespace API_Animalogistics.Models
         public bool Collar { get; set; }
         public string? Genero { get; set; }
         public string? Comentarios { get; set; }
-        public string? GPSY { get; set; }
-        public string? GPSX { get; set; }
+        public decimal GPSY { get; set; }
+        public decimal GPSX { get; set; }
         public string? Estado { get; set; }
         public string? FotoUrl { get; set; }
         [NotMapped]

@@ -14,51 +14,26 @@ namespace API_Animalogistics.Controllers
         private readonly IConfiguration _config = _config;
 
 
-
-        [HttpGet("listarTareasDeUnRefugio")]// Se obtienen todas las tareas de un refugio
+        // Se obtienen todas las tareas disponibles de un refugio
+        // una tarea esta disponible si no tiene un usuario como voluntario asociado
+        // estas van a ser los voluntariados disponibles para que un usuario se haga voluntario de un refugio
+        [HttpGet("listarTareasDisponbilesDeUnRefugio")]
         [Authorize]
-        public async Task<IActionResult> ListarTareasDeUnRefugio([FromForm] Refugio refugio)
+        public async Task<IActionResult> ListarTareasDisponbilesDeUnRefugio(int refugioId)
         {
 
             try
             {
-                // reviso que sea un usuario valido
-                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
-
-                if (usuario == null)
-                {
-                    return BadRequest("Usuario no encontrado.");
-                }
-                // reviso que el usuario sea voluntario del refugio 
-
-                var Uvoluntario = await _contexto.Voluntarios
-                                    .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(v => v.UsuarioId == usuario.Id && v.RefugioId == refugio.Id);
-                if (Uvoluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
-
-                // reviso que el voluntario tenga el permiso de gestion de tareas
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Tareas");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar tareas.");
-                }
-
-
-
+               
                 var tareas = await _contexto.Tareas
-                                              .Include(e => e.Refugio)
-                                              .Where(e => e.RefugioId == refugio.Id)
+                                              .Include(e => e.Voluntario)
+                                              .Where(e => e.Voluntario.RefugioId == refugioId && e.Voluntario.Usuario == null)
+                                             
                                               .ToListAsync();
                 if (tareas == null || !tareas.Any())
                 {
-                    return NotFound("No se encontraron tareas para este refugio.");
+                  
+                    return NotFound(new { mensaje ="No se encontraron tareas disponibles para este refugio."});
                 }
                 return Ok(tareas);
 
@@ -71,7 +46,7 @@ namespace API_Animalogistics.Controllers
 
 
 
-
+/* 
         [HttpPost("crearTarea")]// Se crea una nueva tarea
         [Authorize]
         public async Task<IActionResult> CrearTarea([FromForm] Tarea tarea)
@@ -200,7 +175,7 @@ namespace API_Animalogistics.Controllers
             }
         }
 
-
+ */
 
 
 

@@ -105,11 +105,13 @@ namespace API_Animalogistics.Controllers
                 var noticia = await _contexto.Noticias
                                             /*   .Include(e => e.Refugio) */
                                               .Include(e => e.Voluntario)
+                                              .Include(e => e.Voluntario.Usuario)
                                               .Where(e => e.Voluntario.RefugioId == refugioId)
                                               .ToListAsync();
                 if (noticia == null || !noticia.Any())
                 {
-                    return NotFound("No se encontraron noticias para este refugio.");
+                    return NotFound(new { SinNoticas = "No se encontraron noticias para este refugio." });
+
                 }
                 return Ok(noticia);
             }
@@ -157,6 +159,7 @@ namespace API_Animalogistics.Controllers
                 var noticia = await _contexto.Noticias
                                               .Include(e => e.Voluntario.Refugio)
                                               .Include(e => e.Voluntario)
+                                              .Include(e => e.Voluntario.Usuario)
                                               .Where(e => e.Voluntario.RefugioId == refugioId
                                               && e.Categoria == categoria)
                                               .ToListAsync();
@@ -210,7 +213,7 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
 
-                // reviso que el voluntario tenga permiso para gestionar noticias
+          /*       // reviso que el voluntario tenga permiso para gestionar noticias
                 var permiso = await _contexto.Permisos
                                               .Include(e => e.Voluntario)
                                               .AsNoTracking()
@@ -218,7 +221,7 @@ namespace API_Animalogistics.Controllers
                 if (permiso == null)
                 {
                     return BadRequest("No tiene permiso para gestionar noticias.");
-                }
+                } */
 
 
                 var noticiaImagen = Guid.NewGuid().ToString() + Path.GetExtension(noticia.BannerFile.FileName);
@@ -282,7 +285,7 @@ namespace API_Animalogistics.Controllers
                 }
 
                 
-                // reviso que el voluntario tenga permiso para gestionar noticias
+             /*    // reviso que el voluntario tenga permiso para gestionar noticias
                 var permiso = await _contexto.Permisos
                                               .Include(e => e.Voluntario)
                                               .AsNoTracking()
@@ -290,7 +293,7 @@ namespace API_Animalogistics.Controllers
                 if (permiso == null)
                 {
                     return BadRequest("No tiene permiso para gestionar noticias.");
-                }
+                } */
 
 
                 var noticiaActual = await _contexto.Noticias
@@ -357,7 +360,7 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
                 // reviso que el voluntario tenga permiso para gestionar noticias
-                var permiso = await _contexto.Permisos
+            /*     var permiso = await _contexto.Permisos
                                               .Include(e => e.Voluntario)
                                               .AsNoTracking()
                                               .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
@@ -366,7 +369,7 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("No tiene permiso para gestionar noticias.");
                 }
 
-
+ */
 
                 if (Banner == null)
                 { //la quiero borrar entonces le seteo una por default
@@ -456,7 +459,7 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
                 }
 
-                // reviso que el voluntario tenga permiso para gestionar noticias
+          /*       // reviso que el voluntario tenga permiso para gestionar noticias
                 var permiso = await _contexto.Permisos
                                               .Include(e => e.Voluntario)
                                               .AsNoTracking()
@@ -464,7 +467,7 @@ namespace API_Animalogistics.Controllers
                 if (permiso == null)
                 {
                     return BadRequest("No tiene permiso para gestionar noticias.");
-                }
+                } */
 
                 if (System.IO.File.Exists(noticiaActual.BannerUrl))
                 {

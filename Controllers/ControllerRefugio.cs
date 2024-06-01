@@ -56,9 +56,9 @@ namespace API_Animalogistics.Controllers
 			}
 		}
 
-		[HttpGet("refugioObtenerPorDueño")]// obtengo los refugios de los que soy dueño
+		[HttpGet("refugioObtenerPorDueno")]// obtengo los refugios de los que soy dueño
 		[Authorize]
-		public async Task<IActionResult> RefugiosPorDueño()
+		public async Task<IActionResult> RefugiosPorDueno()
 		{
 
 			try
@@ -83,7 +83,8 @@ namespace API_Animalogistics.Controllers
 				if (refugios == null || refugios.Count == 0)
 				{
 					// Si no se encuentran refugios para el usuario actual
-					return NotFound("No se encontraron refugios para el usuario actual.");
+					    return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
+
 				}
 
 				return Ok(refugios);
@@ -107,15 +108,26 @@ namespace API_Animalogistics.Controllers
 			{
 				var UsuarioLogeado = User.Identity.Name;
 
-				var refugios = await _contexto.Voluntarios
-											  .Include(r => r.Refugio) // con este include agrego el objeto usuario
-											  .Where(v => v.Usuario.Correo == UsuarioLogeado && v.Refugio.UsuarioId != v.UsuarioId)
-											  .ToListAsync();
+			/* 	var voluntario = await _contexto.Voluntarios.
+					Include(v => v.Refugio).Where(v => v.Usuario.Correo == UsuarioLogeado).ToListAsync();
+				if (voluntario == null)
+				{
+					// Si el usuario no existe
+					return NotFound("Voluntario no encontrado.");
+				}
+ */
+				var refugios =  _contexto.Refugios
+					.Join(_contexto.Voluntarios, r => r.Id, v => v.RefugioId, (r, v) => new { Refugio = r, Voluntario = v })
+					.Join(_contexto.Usuarios, rv => rv.Voluntario.UsuarioId, u => u.Id, (rv, u) => new { rv.Refugio, rv.Voluntario, Usuario = u })
+					.Where(x => x.Usuario.Correo == UsuarioLogeado)	
+					.Select(x => x.Refugio)
+					.ToList();
 
 				if (refugios == null || refugios.Count == 0)
 				{
 					// Si no se encuentran refugios para el usuario actual
-					return NotFound("No se encontraron refugios para el usuario actual.");
+					 return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
+
 				}
 
 				return Ok(refugios);
@@ -149,17 +161,21 @@ namespace API_Animalogistics.Controllers
 					return BadRequest("usuario no encontrado.");
 				}
 
-				string PathData = _config["Data:refugioImg"];
 
-				var BannerUrl = Guid.NewGuid().ToString() + Path.GetExtension(refugio.BannerFile.FileName);
+				if(refugio.BannerFile != null){
+					string PathData = _config["Data:refugioImg"];
 
-				string pathCompleto = PathData + BannerUrl;
-				refugio.BannerUrl = pathCompleto;
+					var BannerUrl = Guid.NewGuid().ToString() + Path.GetExtension(refugio.BannerFile.FileName);
 
-				using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
-				{
-					refugio.BannerFile.CopyTo(stream);
+					string pathCompleto = PathData + BannerUrl;
+					refugio.BannerUrl = pathCompleto;
+
+					using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+					{
+						refugio.BannerFile.CopyTo(stream);
+					}
 				}
+				refugio.Usuario = UsuarioLogeado;
 				_contexto.Refugios.Add(refugio);
 				_contexto.SaveChanges();
 				return Ok(refugio);
@@ -168,6 +184,7 @@ namespace API_Animalogistics.Controllers
 			}
 			catch (Exception ex)
 			{
+				Console.WriteLine(ex.Message);			
 				return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
 			}
 

@@ -133,6 +133,45 @@ namespace API_Animalogistics.Controllers
             }
         }
 
+
+        //listar animales disponibles para adoptar de un refugio 
+        [HttpGet("listarAnimalesDisponiblesParaAdoptarPorRefugio")]
+        [Authorize]
+        public async Task<IActionResult> ListarAnimalesDisponiblesParaAdoptarPorRefugio(int refugioId)
+        {
+
+            try
+            {
+                var animales = await _contexto.Animales
+                                              .Include(a => a.Usuario)
+                                              .Where(a => a.RefugioId == refugioId && (
+                                                a.Estado == "En adopcion" || a.Estado == "En recuperacion"))
+                                              .ToListAsync();
+
+                if (animales == null || animales.Count == 0)
+                {
+                    // Si no se encuentran animales
+                    return NotFound(new { message = "No se encontraron animales para el refugio actual."});
+                }
+
+                return Ok(animales);
+            }
+            catch (Exception ex)
+            {
+                // mensaje informativo en caso de error
+                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
         //listar todos los animales que no tengan refugio
         [HttpGet("animalListarSinRefugio")]
         [Authorize]
@@ -187,14 +226,62 @@ namespace API_Animalogistics.Controllers
                 // Verifico si el animal fue registrado por el usuario actual
                 var animalExiste = await _contexto.Animales
                                     .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(i => i.Id == animalEditado.Id && i.Usuario.Correo == usuarioActual.Correo && i.RefugioId == null);
+                                    
+                                    .SingleOrDefaultAsync(i => i.Id == animalEditado.Id && i.Usuario.Correo == usuarioActual.Correo && i.RefugioId == null);
 
                 if (animalExiste != null)
                 {
                     //actualizo el animal
+                    Console.WriteLine("Animal Editado: " + animalEditado.GPSX + " | " + animalEditado.GPSY);
+                    Console.WriteLine("Animal Existe: " + animalExiste.GPSX + " | " + animalExiste.GPSY);
 
-                    _contexto.Animales.Update(animalEditado);
+                  
+                    animalExiste.UsuarioId = usuarioActual.Id;
+
+                    animalExiste.Nombre = animalEditado.Nombre;
+                    animalExiste.Edad = animalEditado.Edad;
+                    animalExiste.Tipo = animalEditado.Tipo;
+                    animalExiste.Tamano = animalEditado.Tamano;
+                    animalExiste.Collar = animalEditado.Collar;
+                    animalExiste.Genero = animalEditado.Genero;
+                    animalExiste.Comentarios = animalEditado.Comentarios;
+                    animalExiste.GPSX = animalEditado.GPSX;
+                    animalExiste.GPSY = animalEditado.GPSY;
+
+
+                    string basePath = AppDomain.CurrentDomain.BaseDirectory;
+
+                    if(animalEditado.FotoFile != null){
+
+
+                        if(animalExiste.FotoUrl != null){
+                            string fullPath = Path.Combine(basePath, animalExiste.FotoUrl);
+                            Console.WriteLine(fullPath);
+                            if (System.IO.File.Exists(animalExiste.FotoUrl)/*  && !animalEditado.FotoUrl.Contains("Defaultanimal.jpeg") */)
+                            {
+                                System.IO.File.Delete(animalExiste.FotoUrl);
+                            }
+
+                        }
+                        
+                        var animalImagen = Guid.NewGuid().ToString() + Path.GetExtension(animalEditado.FotoFile.FileName);
+
+                        string pathCompleto = _config["Data:animalImg"] + animalImagen;
+
+                        animalExiste.FotoUrl = pathCompleto;
+                        using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                        {
+                            animalEditado.FotoFile.CopyTo(stream);
+                        }
+
+
+                    }
+                    
+
+                    
+
+                    
+
                     await _contexto.SaveChangesAsync();
 
                     return Ok(animalEditado);
@@ -344,7 +431,7 @@ namespace API_Animalogistics.Controllers
             }
 
         }
-
+/* 
 
         [HttpPut("animalEditarFoto")]
         [Authorize(Roles = "Administrador, Animales")]
@@ -417,10 +504,10 @@ namespace API_Animalogistics.Controllers
             }
         }
 
-
+ */
         [HttpDelete("animalBorrarDeUsuario")]
-        [Authorize(Roles = "Administrador, Animales")]
-        public async Task<IActionResult> AnimalBorrarDeUsuario(int AnimalId)
+        [Authorize]
+        public async Task<IActionResult> AnimalBorrarDeUsuario(int animalId)
         {
             try
             {
@@ -435,8 +522,8 @@ namespace API_Animalogistics.Controllers
 
                 var animal = await _contexto.Animales
                                     .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(a => a.Id == AnimalId && a.RefugioId == null);
+                                    
+                                    .FirstOrDefaultAsync(a => a.Id == animalId && a.RefugioId == null);
 
 
                 if (animal == null)
@@ -451,7 +538,7 @@ namespace API_Animalogistics.Controllers
 
                 _contexto.Animales.Remove(animal);
                 await _contexto.SaveChangesAsync();
-                return Ok("Animal borrado correctamente.");
+                return Ok(animal);
 
             }
             catch (Exception ex)
