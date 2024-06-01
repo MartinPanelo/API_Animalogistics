@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 01-06-2024 a las 06:02:35
+-- Tiempo de generación: 01-06-2024 a las 22:23:08
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -152,9 +152,7 @@ INSERT INTO `refugios` (`Id`, `UsuarioId`, `Nombre`, `Direccion`, `Descripcion`,
 (13, 8, 'Hogar de Animales', 'Avenida Siempre Viva 742', 'Protección y cuidado de animales', '555-5678', -67.615803, -25.433298, 200, 'http://example.com/banner2.jpg'),
 (14, 8, 'Casa de Mascotas', 'Calle Luna 456', 'Refugio especializado en gatos', '555-8765', -68.599722, -30.381111, 150, 'http://example.com/banner3.jpg'),
 (15, 8, 'Amigos Peludos', 'Calle Estrella 789', 'Rescate y adopción de perros', '555-4321', -69.607222, -31.383611, 120, 'http://example.com/banner4.jpg'),
-(16, 8, 'Refugio Patitas', 'Avenida Sol 1011', 'Cuidado integral para animales domésticos', '555-9999', -28.614722, -35.385000, 180, 'http://example.com/banner5.jpg'),
-(23, 8, 'SOYNOMBRE', 'SOYTIPO', 'ES una Nutria salvaje', 'SOYTIPO', -66.337417, -33.268213, 1500, 'Data/usuario/refugio/7cce63f0-a6f8-4273-b74a-193b9c065d9d.jpg'),
-(26, 8, 'SOYNOMBRE', 'SOYTIPO', 'ES una Nutria salvaje', 'SOYTIPO', -66.324254, -33.304522, 400, NULL);
+(16, 8, 'Refugio Patitas', 'Avenida Sol 1011', 'Cuidado integral para animales domésticos', '555-9999', -28.614722, -35.385000, 180, 'http://example.com/banner5.jpg');
 
 -- --------------------------------------------------------
 
@@ -164,7 +162,6 @@ INSERT INTO `refugios` (`Id`, `UsuarioId`, `Nombre`, `Direccion`, `Descripcion`,
 
 CREATE TABLE `tareas` (
   `Id` int(11) NOT NULL,
-  `VoluntarioId` int(11) NOT NULL,
   `Actividad` varchar(150) NOT NULL,
   `Descripcion` varchar(250) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -173,17 +170,17 @@ CREATE TABLE `tareas` (
 -- Volcado de datos para la tabla `tareas`
 --
 
-INSERT INTO `tareas` (`Id`, `VoluntarioId`, `Actividad`, `Descripcion`) VALUES
-(1, 1, 'Pasear perros', 'Sacar a pasear a los perros del refugio por las mañanas.'),
-(2, 1, 'Limpieza de instalaciones', 'Limpiar las jaulas y áreas de los animales.'),
-(3, 5, 'Alimentación', 'Preparar y distribuir la comida para los animales.'),
-(4, 5, 'Cuidado veterinario', 'Asistir al veterinario en la atención de animales enfermos.'),
-(5, 6, 'Socialización de gatos', 'Jugar y socializar con los gatos del refugio.'),
-(6, 6, 'Mantenimiento de jardines', 'Cuidar y mantener las áreas verdes del refugio.'),
-(7, 13, 'Recepción de animales', 'Recibir y registrar a los animales que ingresan al refugio.'),
-(8, 14, 'Campañas de adopción', 'Organizar y participar en campañas de adopción de animales.'),
-(9, 15, 'Educación comunitaria', 'Impartir charlas sobre tenencia responsable de mascotas.'),
-(10, 20, 'Administración', 'Ayudar con tareas administrativas del refugio.');
+INSERT INTO `tareas` (`Id`, `Actividad`, `Descripcion`) VALUES
+(1, 'Pasear perros', 'Sacar a pasear a los perros del refugio por las mañanas.'),
+(2, 'Limpieza de instalaciones', 'Limpiar las jaulas y áreas de los animales.'),
+(3, 'Alimentación', 'Preparar y distribuir la comida para los animales.'),
+(4, 'Cuidado veterinario', 'Asistir al veterinario en la atención de animales enfermos.'),
+(5, 'Socialización de gatos', 'Jugar y socializar con los gatos del refugio.'),
+(6, 'Mantenimiento de jardines', 'Cuidar y mantener las áreas verdes del refugio.'),
+(7, 'Recepción de animales', 'Recibir y registrar a los animales que ingresan al refugio.'),
+(8, 'Campañas de adopción', 'Organizar y participar en campañas de adopción de animales.'),
+(9, 'Educación comunitaria', 'Impartir charlas sobre tenencia responsable de mascotas.'),
+(10, 'Administración', 'Ayudar con tareas administrativas del refugio.');
 
 -- --------------------------------------------------------
 
@@ -223,22 +220,23 @@ INSERT INTO `usuarios` (`Id`, `Nombre`, `Apellido`, `DNI`, `Telefono`, `Correo`,
 CREATE TABLE `voluntarios` (
   `Id` int(11) NOT NULL,
   `UsuarioId` int(11) DEFAULT NULL,
-  `RefugioId` int(11) NOT NULL
+  `RefugioId` int(11) NOT NULL,
+  `TareaId` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `voluntarios`
 --
 
-INSERT INTO `voluntarios` (`Id`, `UsuarioId`, `RefugioId`) VALUES
-(1, 8, 6),
-(5, 3, 1),
-(6, 8, 15),
-(13, NULL, 15),
-(14, NULL, 6),
-(15, NULL, 16),
-(16, 8, 16),
-(20, NULL, 16);
+INSERT INTO `voluntarios` (`Id`, `UsuarioId`, `RefugioId`, `TareaId`) VALUES
+(1, 8, 6, 1),
+(5, 3, 1, 2),
+(6, 8, 15, 3),
+(13, NULL, 15, 3),
+(14, NULL, 6, 4),
+(15, NULL, 16, 4),
+(16, 8, 16, 4),
+(20, NULL, 16, 5);
 
 --
 -- Índices para tablas volcadas
@@ -277,8 +275,7 @@ ALTER TABLE `refugios`
 -- Indices de la tabla `tareas`
 --
 ALTER TABLE `tareas`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `VoluntarioId` (`VoluntarioId`);
+  ADD PRIMARY KEY (`Id`);
 
 --
 -- Indices de la tabla `usuarios`
@@ -292,7 +289,8 @@ ALTER TABLE `usuarios`
 ALTER TABLE `voluntarios`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `UsuarioId` (`UsuarioId`) USING BTREE,
-  ADD KEY `RefugioId` (`RefugioId`) USING BTREE;
+  ADD KEY `RefugioId` (`RefugioId`) USING BTREE,
+  ADD KEY `TareaId` (`TareaId`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -370,17 +368,12 @@ ALTER TABLE `refugios`
   ADD CONSTRAINT `refugio_ibfk_1` FOREIGN KEY (`UsuarioId`) REFERENCES `usuarios` (`Id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `tareas`
---
-ALTER TABLE `tareas`
-  ADD CONSTRAINT `tareas_ibfk_1` FOREIGN KEY (`VoluntarioId`) REFERENCES `voluntarios` (`Id`) ON DELETE CASCADE;
-
---
 -- Filtros para la tabla `voluntarios`
 --
 ALTER TABLE `voluntarios`
   ADD CONSTRAINT `voluntario_ibfk_1` FOREIGN KEY (`UsuarioId`) REFERENCES `usuarios` (`Id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `voluntario_ibfk_2` FOREIGN KEY (`RefugioId`) REFERENCES `refugios` (`Id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `voluntario_ibfk_2` FOREIGN KEY (`RefugioId`) REFERENCES `refugios` (`Id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `voluntarios_ibfk_1` FOREIGN KEY (`TareaId`) REFERENCES `tareas` (`Id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
