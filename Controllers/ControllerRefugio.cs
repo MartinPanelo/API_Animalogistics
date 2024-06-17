@@ -80,12 +80,12 @@ namespace API_Animalogistics.Controllers
 											  .Where(r => r.Usuario.Correo == UsuarioLogeado)
 											  .ToListAsync();
 
-				if (refugios == null || refugios.Count == 0)
+			/* 	if (refugios == null || refugios.Count == 0)
 				{
 					// Si no se encuentran refugios para el usuario actual
 					    return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
 
-				}
+				} */
 
 				return Ok(refugios);
 			}
@@ -97,38 +97,76 @@ namespace API_Animalogistics.Controllers
 		}
 
 
-
-
-		[HttpGet("refugioObtenerPorVoluntario")]// obtengo los refugios en los que soy voluntario
+		[HttpGet("refugioPorId")]
 		[Authorize]
-		public async Task<IActionResult> RefugiosPorVoluntario()
+		public async Task<IActionResult> RefugioPorId(int refugioId)
 		{
 
 			try
 			{
 				var UsuarioLogeado = User.Identity.Name;
 
-			/* 	var voluntario = await _contexto.Voluntarios.
-					Include(v => v.Refugio).Where(v => v.Usuario.Correo == UsuarioLogeado).ToListAsync();
-				if (voluntario == null)
+				// reviso que el usuario exista
+				var usuario = await _contexto.Usuarios
+											  .AsNoTracking()
+											  .FirstOrDefaultAsync(u => u.Correo == UsuarioLogeado);
+				if (usuario == null)
 				{
 					// Si el usuario no existe
-					return NotFound("Voluntario no encontrado.");
+					return NotFound("Usuario no encontrado.");
 				}
- */
-				var refugios =  _contexto.Refugios
-					.Join(_contexto.Voluntarios, r => r.Id, v => v.RefugioId, (r, v) => new { Refugio = r, Voluntario = v })
-					.Join(_contexto.Usuarios, rv => rv.Voluntario.UsuarioId, u => u.Id, (rv, u) => new { rv.Refugio, rv.Voluntario, Usuario = u })
-					.Where(x => x.Usuario.Correo == UsuarioLogeado)	
-					.Select(x => x.Refugio)
-					.ToList();
 
-				if (refugios == null || refugios.Count == 0)
+				var refugio = await _contexto.Refugios
+											  .Include(r => r.Usuario)
+											  .Where(r => r.Usuario == usuario && r.Id == refugioId)
+											  .FirstOrDefaultAsync();
+
+			/* 	if (refugios == null || refugios.Count == 0)
 				{
 					// Si no se encuentran refugios para el usuario actual
-					 return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
+					    return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
 
-				}
+				} */
+
+				return Ok(refugio);
+			}
+			catch (Exception ex)
+			{
+				// mensaje informativo en caso de error
+				return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+			}
+		}
+
+		[HttpGet("refugioObtenerPorVoluntario")]// obtengo los refugios en los que soy voluntario
+		[Authorize]
+		public async Task<IActionResult> RefugiosPorVoluntario()
+		{
+			// ES VOLUNTARIO SI TIENE UNA TAREA , ~EVENTO~ , NOTICIA ASOCIADO A ESTE REFUGIO
+			try
+			{
+				var UsuarioLogeado = User.Identity.Name;
+
+			
+
+				var voluntarioPorTarea =  _contexto.Tareas
+								.Include(t => t.Refugio)
+								.Include(t => t.Usuario)
+								.Where(t => t.Usuario.Correo == UsuarioLogeado && t.Refugio.Usuario.Correo != UsuarioLogeado)
+								.Select(t => t.Refugio)
+								.Distinct()
+								.ToList();
+
+				var voluntarioPorNoticia =  _contexto.Noticias
+								.Include(t => t.Refugio)
+								.Include(t => t.Usuario)
+								.Where(t => t.Usuario.Correo == UsuarioLogeado && t.Refugio.Usuario.Correo != UsuarioLogeado)
+								.Select(t => t.Refugio)
+								.Distinct()
+								.ToList();
+
+				var refugios = voluntarioPorTarea.Union(voluntarioPorNoticia).Distinct().ToList();
+
+
 
 				return Ok(refugios);
 			}

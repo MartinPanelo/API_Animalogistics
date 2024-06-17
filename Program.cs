@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
 
-builder.WebHost.UseUrls("http://192.168.0.*:5014","http://localhost:5015");
+builder.WebHost.UseUrls("http://192.168.0.*:5014","http://localhost:5015"/* ,"http://192.168.84.6:5014" */);
 
 // Add services to the container.
 builder.Services.AddControllers();

@@ -1,4 +1,4 @@
-using API_Animalogistics.Models;
+/* using API_Animalogistics.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +11,9 @@ namespace API_Animalogistics.Controllers
 	public class ControllerVoluntario(DataContext _contexto, IConfiguration _config) : ControllerBase
 	{
 		private readonly DataContext _contexto = _contexto;
-		private readonly IConfiguration _config = _config;
+		private readonly IConfiguration _config = _config; */
 
-		[HttpGet("listarVoluntariadosDisponbilesDeUnRefugio")]
+		/* [HttpGet("listarVoluntariadosDisponbilesDeUnRefugio")]
         [Authorize]
         public async Task<IActionResult> ListarVoluntariadosDisponbilesDeUnRefugio(int refugioId)
         {
@@ -38,8 +38,60 @@ namespace API_Animalogistics.Controllers
             {
                 return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
             }
-        }
+        } */
         
+
+
+		/* // a este endpoint solo lo puede acceder el duenio del refugio
+		[HttpGet("listarTodosLosVoluntariadosDeUnRefugio")]
+        [Authorize]
+		 public async Task<IActionResult> ListarTodosLosVoluntariadosDeUnRefugio(int refugioId)
+        {
+            try
+            {
+
+				var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+				if (usuario == null)
+				{
+					return BadRequest("No se encontro el usuario");
+				}
+
+				//¿es dueño del refugio?
+				var refugio = await _contexto.Refugios
+					.Include(r => r.Id == refugioId && r.Usuario == usuario).FirstOrDefaultAsync();
+					
+					
+				if (refugio == null)
+				{
+					return NotFound(new { permiso = "Solo el duenio del refugio puede gestionar a los voluntariados." });
+				}
+               
+                var voluntariados = await _contexto.Voluntarios
+                                              .Include(v => v.Tarea)
+                                              .Where(v => v.RefugioId == refugioId && v.Usuario == null)
+                                             
+                                              .ToListAsync();
+                if (voluntariados == null || !voluntariados.Any())
+                {
+                  
+                    return NotFound(new { mensaje ="No se encontraron voluntariados disponibles para este refugio."});
+                }
+                return Ok(voluntariados);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        } */
+
+
+
+/* 
+
+
+
+
         [HttpPut("anotarseComoVoluntario")]
 		[Authorize]
 		public async Task<IActionResult> AnotarseComoVoluntario(int voluntarioId)
@@ -86,3 +138,4 @@ namespace API_Animalogistics.Controllers
 
     }
 }
+ */

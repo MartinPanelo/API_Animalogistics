@@ -21,12 +21,12 @@ namespace API_Animalogistics.Controllers
         {
             try
             {
+
                 var noticia = await _contexto.Noticias
-                                              .Include(e => e.Voluntario)
-                                              .Include(e => e.Voluntario.Usuario)
-                                           /*    .Include(e => e.Refugio) */
-                                              .Where(e => e.Categoria == categoria)
-                                              .ToListAsync();
+                                            .Include(e => e.Usuario)
+                                            .Include(e => e.Refugio)
+                                            .Where(e => e.Categoria == categoria)
+                                            .ToListAsync();
                 if (noticia == null || !noticia.Any())
                 {
                     return NotFound("No se encontraron noticias para esta categoria.");
@@ -48,13 +48,10 @@ namespace API_Animalogistics.Controllers
             try
             {
                 var noticia = await _contexto.Noticias
-                                              
-                                              .Include(e => e.Voluntario)
-                                              .Include(e => e.Voluntario.Usuario)
-                                              .Include(e => e.Voluntario.Refugio)
-                                              /* .Include(e => e.Refugio) */
-                                            
-                                              .ToListAsync();
+
+                                              .Include(e => e.Usuario)
+                                              .Include(e => e.Refugio)
+                                               .ToListAsync();
                 if (noticia == null || !noticia.Any())
                 {
                     return NotFound("No se encontraron noticias.");
@@ -76,12 +73,12 @@ namespace API_Animalogistics.Controllers
             {
 
                 //Comprobar que el refugio exista
-                var refugio =  _contexto.Refugios
+                var refugio = _contexto.Refugios
                                               .Include(e => e.Usuario)
                                               .FirstOrDefault(e => e.Id == refugioId);
                 if (refugio == null)
                 {
-                    return BadRequest("Refugio no encontrado."+ refugioId);
+                    return BadRequest("Refugio no encontrado." + refugioId);
                 }
                 // revisar que el usuario exista 
                 var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
@@ -91,35 +88,81 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Usuario no encontrado.");
                 }
 
-            /*     //comprobar que el voluntario esta viendo noticias de un refugio al que pertenece                
-                var voluntario = await _contexto.Voluntarios.
-                                              Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == refugioId);
-                if (voluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                } */
 
 
-
-                var noticia = await _contexto.Noticias
-                                            /*   .Include(e => e.Refugio) */
-                                              .Include(e => e.Voluntario)
-                                              .Include(e => e.Voluntario.Usuario)
-                                              .Where(e => e.Voluntario.RefugioId == refugioId)
+                var noticias = await _contexto.Noticias
+                                              .Include(e => e.Refugio)
+                                              .Include(e => e.Usuario)
+                                              .Where(e => e.RefugioId == refugioId)
                                               .ToListAsync();
-                if (noticia == null || !noticia.Any())
+                if (noticias == null || !noticias.Any())
                 {
                     return NotFound(new { SinNoticas = "No se encontraron noticias para este refugio." });
 
                 }
-                return Ok(noticia);
+                return Ok(noticias);
             }
             catch (Exception ex)
             {
                 return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
             }
         }
+
+
+        /*    //listar todas las noticias de un refugio que es dueño o voluntario
+          [HttpGet("noticiaListarPorRefugioGestion")]
+          [Authorize]
+          public async Task<IActionResult> NoticiaListarPorRefugioGestion(int refugioId)
+          {
+              try
+              {
+
+                  //Comprobar que el refugio exista
+                  var refugio =  _contexto.Refugios
+                                                .Include(e => e.Usuario)
+                                                .FirstOrDefault(e => e.Id == refugioId);
+                  if (refugio == null)
+                  {
+                      return BadRequest("Refugio no encontrado."+ refugioId);
+                  }
+                  // revisar que el usuario exista 
+                  var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                  if (usuario == null)
+                  {
+                      return BadRequest("Usuario no encontrado.");
+                  }
+
+                  //El usuario es dueno del refugio?
+                  var noticias = new List<Noticia>();
+                  if(refugio.Usuario == usuario){
+
+                       noticias = await _contexto.Noticias
+                                                .Include(v => v.Refugio)       
+                                                .Include(v => v.Usuario)                                      
+                                                .Where( v =>v.RefugioId == refugioId)                                            
+                                                .ToListAsync();
+
+                  } // esta siendo voluntario de un refugio?
+
+                  else
+                  {
+                      noticias = await _contexto.Noticias
+                                                .Include(v => v.Refugio)       
+                                                .Include(v => v.Usuario)                                      
+                                                .Where( v =>v.RefugioId == refugioId && v.Usuario == usuario)                                            
+                                                .ToListAsync();
+
+                  }
+
+                  return Ok(noticias);
+              }
+              catch (Exception ex)
+              {
+                  return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+              }
+          }
+   */
 
 
         //listar todas las noticias por categoria de un refugio
@@ -133,7 +176,7 @@ namespace API_Animalogistics.Controllers
                 //Comprobar que el refugio exista
                 var refugio = await _contexto.Refugios
                                               .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == refugioId );
+                                              .SingleOrDefaultAsync(e => e.Id == refugioId);
                 if (refugio == null)
                 {
                     return BadRequest("Refugio no encontrado.");
@@ -146,28 +189,18 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Usuario no encontrado.");
                 }
 
-              /*   //comprobar que el voluntario esta viendo noticias de un refugio al que pertenece                
-                var voluntario = await _contexto.Voluntarios.
-                                              Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == refugioId);
-                if (voluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
- */
 
-                var noticia = await _contexto.Noticias
-                                              .Include(e => e.Voluntario.Refugio)
-                                              .Include(e => e.Voluntario)
-                                              .Include(e => e.Voluntario.Usuario)
-                                              .Where(e => e.Voluntario.RefugioId == refugioId
+                var noticias = await _contexto.Noticias
+                                              .Include(e => e.Refugio)
+                                              .Include(e => e.Usuario)
+                                              .Where(e => e.RefugioId == refugioId
                                               && e.Categoria == categoria)
                                               .ToListAsync();
-                if (noticia == null || !noticia.Any())
+                if (noticias == null || !noticias.Any())
                 {
                     return NotFound("No se encontraron noticias para este refugio.");
                 }
-                return Ok(noticia);
+                return Ok(noticias);
             }
             catch (Exception ex)
             {
@@ -176,9 +209,9 @@ namespace API_Animalogistics.Controllers
         }
 
 
-        [HttpPost("noticiaAgregar")]// Un usuario registra una noticia 
+        [HttpPost("crearNoticia")]// Un usuario registra una noticia 
         [Authorize]
-        public async Task<IActionResult> NoticiaAgregar([FromForm] Noticia noticia)
+        public async Task<IActionResult> CrearNoticia([FromForm] Noticia noticia)
         {
 
             try
@@ -187,57 +220,60 @@ namespace API_Animalogistics.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                // reviso que lo registre un usuario valido
+                // reviso que el usuario es valido
                 var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
 
                 if (usuario == null)
                 {
-                    return BadRequest("Usuario no encontrado.");
+                    return BadRequest(new { mensaje = "Usuario no encontrado." });
                 }
-
-                // revisar que el refugio exista
+                //Comprobar que el refugio exista
                 var refugio = await _contexto.Refugios
                                               .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.Voluntario.RefugioId );
+                                              .SingleOrDefaultAsync(e => e.Id == noticia.RefugioId);
                 if (refugio == null)
                 {
-                    return BadRequest("Refugio no encontrado.");
+                    return BadRequest(new { mensaje = "Refugio no encontrado." });
                 }
 
-                // revisar que el voluntario exista en este refugio
-                var voluntario = await _contexto.Voluntarios
-                                              .Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.VoluntarioId && e.RefugioId == refugio.Id);
-                if (voluntario == null)
+                // puede crear la noticia si es el duenio del refugio o si tiene una tarea asignada
+
+                var RefugioVoluntarioPorTarea = _contexto.Tareas
+                                .Include(t => t.Refugio)
+                                .Include(t => t.Usuario)
+                                .Where(t => t.Usuario == usuario || t.Refugio.Usuario == usuario)
+                                .Select(t => t.Refugio)
+                                .Distinct()
+                                .ToList();
+
+                if (RefugioVoluntarioPorTarea.Any(r => r.Id == refugio.Id))
                 {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+
+                    noticia.Usuario = usuario;
+
+                    if (noticia.BannerFile != null)
+                    {
+
+                        var dirNoticiaBanner = Guid.NewGuid().ToString() + Path.GetExtension(noticia.BannerFile.FileName);
+
+                        string pathCompleto = _config["Data:noticiaImg"] + dirNoticiaBanner;
+
+                        noticia.BannerUrl = pathCompleto;
+                        using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                        {
+                            noticia.BannerFile.CopyTo(stream);
+                        }
+                    }
+
+                    _contexto.Noticias.Add(noticia);
+                    await _contexto.SaveChangesAsync();
+                    return Ok(noticia);
+                }else{
+
+                    return BadRequest(new { mensaje = "No eres dueño del refugio o tiene una tarea asignada." });
                 }
 
-          /*       // reviso que el voluntario tenga permiso para gestionar noticias
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar noticias.");
-                } */
 
-
-                var noticiaImagen = Guid.NewGuid().ToString() + Path.GetExtension(noticia.BannerFile.FileName);
-
-                string pathCompleto = _config["Data:noticiaImg"] + noticiaImagen;
-
-                noticia.BannerUrl = pathCompleto;
-                //   noticia.VoluntarioId = usuario.Id;
-
-                using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
-                {
-                    noticia.BannerFile.CopyTo(stream);
-                }
-                _contexto.Noticias.Add(noticia);
-                _contexto.SaveChanges();
-                return Ok(noticia);
 
             }
             catch (Exception ex)
@@ -248,6 +284,47 @@ namespace API_Animalogistics.Controllers
         }
 
         //Editar una noticia
+
+
+        // solo si es dueno del refugio donde esta la noticia
+        // solo si es el que redacto la notica
+        [HttpGet("noticiaPorId")]
+        [Authorize]
+        public async Task<IActionResult> NoticiaPorId(int noticiaId)
+        {
+
+            try
+            {
+
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return BadRequest("Usuario no encontrado.");
+                }
+
+                var noticia = await _contexto.Noticias
+                                              .Include(v => v.Refugio)
+                                              .Include(v => v.Usuario)
+                                              .Where(v => v.Id == noticiaId && (v.Refugio.Usuario == usuario || v.Usuario == usuario))
+                                              .FirstOrDefaultAsync();
+
+                if (noticia == null)
+                {
+
+                    return NotFound(new { mensaje = "No se encontro la noticia." });
+                }
+
+                return Ok(noticia);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        }
+
+
         [HttpPut("noticiaEditar")]
         [Authorize]
         public async Task<IActionResult> NoticiaEditar([FromForm] Noticia noticia)
@@ -263,156 +340,65 @@ namespace API_Animalogistics.Controllers
 
                 if (usuario == null)
                 {
-                    return BadRequest("Usuario no encontrado.");
+                    return NotFound(new { mensaje = "Usuario no encontrado." });
                 }
 
-                //Comprobar que el refugio exista
-                var refugio = await _contexto.Refugios
-                                              .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.Voluntario.RefugioId);
-                if (refugio == null)
+                var noticiaOriginal = await _contexto.Noticias
+                                  .Include(t => t.Refugio)
+                                  .Include(t => t.Usuario)
+                                   .FirstOrDefaultAsync(v => (v.Refugio.Usuario.Id == usuario.Id || v.Usuario == usuario) && (v.Id == noticia.Id));
+
+                // reviso que el usuario sea el dueno del refugio o el que redacto la noticia
+
+                if (noticiaOriginal == null)
                 {
-                    return BadRequest("Refugio no encontrado.");
+                    return NotFound(new { mensaje = "No se encontro la noticia." });
                 }
 
-                //comprobar que el voluntario esta aditando una noticiaa de un refugio al que pertenece                
-                var voluntario = await _contexto.Voluntarios.
-                                              Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == noticia.Voluntario.RefugioId);
-                if (voluntario == null)
+                //solo se pueden editar el titulo, categoria, contenido y banner
+
+
+                noticiaOriginal.Titulo = noticia.Titulo;
+                noticiaOriginal.Categoria = noticia.Categoria;
+                noticiaOriginal.Contenido = noticia.Contenido;
+
+
+                // esto es para el banner
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+
+                if (noticia.BannerFile != null)
                 {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
-
-                
-             /*    // reviso que el voluntario tenga permiso para gestionar noticias
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar noticias.");
-                } */
 
 
-                var noticiaActual = await _contexto.Noticias
-                                              .AsNoTracking()
-                                              .Include(e => e.Voluntario.Refugio)
-                                              .Include(e => e.Voluntario)
-                                              .SingleOrDefaultAsync(e => e.Id == noticia.Id);
-                if (noticiaActual == null)
-                {
-                    return NotFound("Noticia no encontrada.");
-                }
-
-             
-                _contexto.Noticias.Update(noticia);
-                await _contexto.SaveChangesAsync();
-                return Ok(noticia);
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
-            }
-        }
-
-
-
-
-        [HttpPut("noticiaEditarBanner")]
-        [Authorize]
-        public async Task<IActionResult> NoticiaEditarBanner(IFormFile? Banner, [FromForm] int NoticiaId)
-        {
-            try
-            {
-                var UsuarioLogeado = User.Identity.Name;
-                Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(u => u.Correo == UsuarioLogeado);
-
-                Noticia noticia = await _contexto.Noticias.SingleOrDefaultAsync(r => r.Id == NoticiaId);
-
-                if (usuario == null)
-                {
-                    return NotFound("Usuario no encontrado");
-                }
-                if (noticia == null)
-                {
-                    return NotFound("noticia no encontrada");
-                }
-
-               
-                var refugio = await _contexto.Refugios
-                                              .Include(e => e.Usuario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(r => r.Id == noticia.Voluntario.RefugioId);
-                if (refugio == null)
-                {
-                    return BadRequest("Refugio no encontrado.");
-                }
-                // reviso que el usuario es voluntario de este refugio
-
-                var voluntario = await _contexto.Voluntarios.
-                                              Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == refugio.Id);
-                if (voluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
-                // reviso que el voluntario tenga permiso para gestionar noticias
-            /*     var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar noticias.");
-                }
-
- */
-
-                if (Banner == null)
-                { //la quiero borrar entonces le seteo una por default
-
-
-                    if (System.IO.File.Exists(noticia.BannerUrl) && !noticia.BannerUrl.Contains("DefaultNoticia.jpg"))
+                    if (noticiaOriginal.BannerUrl != null)
                     {
-                        System.IO.File.Delete(noticia.BannerUrl);
+                        string fullPath = Path.Combine(basePath, noticiaOriginal.BannerUrl);
+
+                        if (System.IO.File.Exists(noticiaOriginal.BannerUrl))
+                        {
+                            System.IO.File.Delete(noticiaOriginal.BannerUrl);
+                        }
+
                     }
 
-                    string pathBannerDefault = Path.Combine(_config["Data:noticiaImg"], "DefaultNoticia.jpg");
-                    noticia.BannerUrl = pathBannerDefault;
+                    var dirNoticiaBanner = Guid.NewGuid().ToString() + Path.GetExtension(noticia.BannerFile.FileName);
 
-                }
-                else
-                {
+                    string pathCompleto = _config["Data:noticiaImg"] + dirNoticiaBanner;
 
-
-
-                    if (System.IO.File.Exists(noticia.BannerUrl) && !noticia.BannerUrl.Contains("DefaultNoticia.jpg"))
-                    {
-                        System.IO.File.Delete(noticia.BannerUrl);
-                    }
-
-
-                    var BannerUrl = Guid.NewGuid().ToString() + Path.GetExtension(Banner.FileName);
-
-                    string pathCompleto = Path.Combine(_config["Data:noticiaImg"], BannerUrl);
-                    noticia.BannerUrl = pathCompleto;
-
-
+                    noticiaOriginal.BannerUrl = pathCompleto;
                     using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
                     {
-                        Banner.CopyTo(stream);
+                        noticia.BannerFile.CopyTo(stream);
                     }
 
+
                 }
-                //_contexto.Refugios.Update(refugio);
+
+                _contexto.Update(noticiaOriginal);
 
                 await _contexto.SaveChangesAsync();
 
-                return Ok("Banner moficado correctamente");
-
+                return Ok(noticiaOriginal);
             }
             catch (Exception ex)
             {
@@ -422,18 +408,20 @@ namespace API_Animalogistics.Controllers
 
 
 
-
         [HttpDelete("noticiaEliminar")]
         [Authorize]
-        public async Task<IActionResult> NoticiaEliminar([FromForm] int NoticiaId)
+        public async Task<IActionResult> NoticiaEliminar(int NoticiaId)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                // reviso que el usuario es valido
+
+                // si es dueño del refugio puede borrar cualquier Noticia
+
+                // si es voluntario no puede borrar noticias que no a redactado, pero puede borrar las propias
+
+                // si no es dueno ni voluntario no se que hace aca asdasdadsada
+
+
                 var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
 
                 if (usuario == null)
@@ -441,50 +429,51 @@ namespace API_Animalogistics.Controllers
                     return BadRequest("Usuario no encontrado.");
                 }
 
-                var noticiaActual = await _contexto.Noticias
 
-                                                              .Include(e => e.Voluntario.Refugio)
-                                                              .Include(e => e.Voluntario)
-                                                              .SingleOrDefaultAsync(e => e.Id == NoticiaId);
-                if (noticiaActual == null)
-                {
-                    return NotFound("Noticia no encontrada.");
-                }
-                //comprobar que el voluntario esta borrand una noticiaa de un refugio al que pertenece                
-                var voluntario = await _contexto.Voluntarios.
-                                              Include(e => e.Refugio)
-                                              .SingleOrDefaultAsync(v => v.Usuario.Correo == User.Identity.Name && v.RefugioId == noticiaActual.Voluntario.RefugioId);
-                if (voluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
 
-          /*       // reviso que el voluntario tenga permiso para gestionar noticias
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == voluntario.Id && p.Rol == "Noticias");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar noticias.");
-                } */
+                // conprobar que la noticia exista
 
-                if (System.IO.File.Exists(noticiaActual.BannerUrl))
+
+                var noticia = await _contexto.Noticias
+                                              .Include(v => v.Refugio)
+                                              .Include(v => v.Usuario)
+                                              .Where(v => v.Id == NoticiaId)
+                                              .FirstOrDefaultAsync();
+
+
+                if (noticia == null)
                 {
-                    System.IO.File.Delete(noticiaActual.BannerUrl);
+
+                    return NotFound(new { mensaje = "No se encontro la noticia a borrar." + noticia.Id });
                 }
 
-                _contexto.Noticias.Remove(noticiaActual);
-                await _contexto.SaveChangesAsync();
-                return Ok(noticiaActual);
+
+                // esa noticia puede ser borrada? si es dueno o el que la redacto hace puede, si no, no
+
+
+                if (noticia.Usuario == usuario || noticia.Refugio.Usuario == usuario)
+                {
+
+                    _contexto.Noticias.Remove(noticia);
+                    _contexto.SaveChanges();
+                    return Ok(noticia);
+                }
+                else
+                {
+
+                    return BadRequest("No tiene permisos para borrar esta noticia.");
+                }
+
+
 
             }
             catch (Exception ex)
             {
-                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
             }
-
         }
+
+
 
 
     }
