@@ -121,12 +121,12 @@ namespace API_Animalogistics.Controllers
 											  .Where(r => r.Usuario == usuario && r.Id == refugioId)
 											  .FirstOrDefaultAsync();
 
-			/* 	if (refugios == null || refugios.Count == 0)
+			 	if (refugio == null)
 				{
 					// Si no se encuentran refugios para el usuario actual
 					    return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
 
-				} */
+				} 
 
 				return Ok(refugio);
 			}
@@ -238,17 +238,26 @@ namespace API_Animalogistics.Controllers
 			{
 				var usuarioActual = User.Identity.Name;
 
-				// Verifico si el modelo recibido es válido
+				// Verifico si lo recibido es válido
 				if (!ModelState.IsValid)
 				{
 					return BadRequest(ModelState);
+				}
+
+				// Verifico si el usuario existe
+				var usuario = await _contexto.Usuarios
+					.AsNoTracking()
+					.FirstOrDefaultAsync(u => u.Correo == usuarioActual);
+				if (usuario == null)
+				{
+					return NotFound("Usuario no encontrado.");
 				}
 
 				// Verifico si el refugio pertenece al usuario actual
 				var RefugioExistente = await _contexto.Refugios
 					.Include(r => r.Usuario)
 					.AsNoTracking()
-					.FirstOrDefaultAsync(r => r.Id == refugioEditado.Id && r.Usuario.Correo == usuarioActual);
+					.FirstOrDefaultAsync(r => r.Id == refugioEditado.Id && r.Usuario == usuario);
 
 				if (RefugioExistente == null)
 				{
@@ -256,7 +265,39 @@ namespace API_Animalogistics.Controllers
 				}
 
 				refugioEditado.UsuarioId = RefugioExistente.UsuarioId;
-				refugioEditado.BannerUrl = RefugioExistente.BannerUrl;
+
+				if (refugioEditado.BannerFile != null)
+                    {
+
+
+                        if (RefugioExistente.BannerUrl != null)
+                        {
+                            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                            
+                            string fullPath = Path.Combine(basePath, RefugioExistente.BannerUrl);
+                            
+                            Console.WriteLine(fullPath);
+                            if (System.IO.File.Exists(RefugioExistente.BannerUrl))
+                            {
+                                System.IO.File.Delete(RefugioExistente.BannerUrl);
+                            }
+
+                        }
+
+                        var refugioImagen = Guid.NewGuid().ToString() + Path.GetExtension(refugioEditado.BannerFile.FileName);
+
+                        string pathCompleto = _config["Data:refugioImg"] + refugioImagen;
+
+                      //  RefugioExistente.BannerUrl = pathCompleto;
+                        using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                        {
+                            refugioEditado.BannerFile.CopyTo(stream);
+                        }
+						refugioEditado.BannerUrl = pathCompleto;
+
+
+                    }
+				
 
 				// Actualizo el refugio
 				_contexto.Refugios.Update(refugioEditado);

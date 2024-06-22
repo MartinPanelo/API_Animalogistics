@@ -242,7 +242,7 @@ namespace API_Animalogistics.Controllers
                     animalExiste.GPSY = animalEditado.GPSY;
 
 
-                    string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                   
 
                     if (animalEditado.FotoFile != null)
                     {
@@ -250,7 +250,10 @@ namespace API_Animalogistics.Controllers
 
                         if (animalExiste.FotoUrl != null)
                         {
+                            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                            
                             string fullPath = Path.Combine(basePath, animalExiste.FotoUrl);
+                            
                             Console.WriteLine(fullPath);
                             if (System.IO.File.Exists(animalExiste.FotoUrl)/*  && !animalEditado.FotoUrl.Contains("Defaultanimal.jpeg") */)
                             {
@@ -378,7 +381,8 @@ namespace API_Animalogistics.Controllers
                 if (animalExiste != null)
                 {
 
-                    animalExiste.Refugio = refugioExiste; ;
+                    animalExiste.Refugio = refugioExiste;
+                    animalExiste.Estado = "En recuperacion";
 
                     _contexto.Animales.Update(animalExiste);
                     await _contexto.SaveChangesAsync();
