@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 01-06-2024 a las 22:23:08
+-- Tiempo de generación: 23-06-2024 a las 22:57:53
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `testanimalogistics`
+-- Base de datos: `testtest`
 --
 
 -- --------------------------------------------------------
@@ -41,7 +41,7 @@ CREATE TABLE `animales` (
   `FotoUrl` varchar(255) DEFAULT NULL,
   `GPSY` decimal(8,6) DEFAULT NULL,
   `GPSX` decimal(9,6) DEFAULT NULL,
-  `Estado` enum('Reportado','Buscando','En recuperacion','En adopcion') DEFAULT 'Reportado'
+  `Estado` enum('Reportado','En recuperacion','En adopcion') DEFAULT 'Reportado'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -49,15 +49,10 @@ CREATE TABLE `animales` (
 --
 
 INSERT INTO `animales` (`Id`, `RefugioId`, `UsuarioId`, `Nombre`, `Edad`, `Tipo`, `Tamano`, `Collar`, `Genero`, `Comentarios`, `FotoUrl`, `GPSY`, `GPSX`, `Estado`) VALUES
-(10, 1, 3, NULL, '2', 'Perro', 'Mediano', 1, 'Macho', 'Cariñoso y juguetón', 'https://picsum.photos/200\n', 40.712800, -74.006000, 'En adopcion'),
-(11, 16, 3, 'Luna', '1', 'Gato', 'Pequeño', 0, 'Hembra', 'Rescatada de la calle', 'https://picsum.photos/200\n', 34.052200, -100.000000, 'En adopcion'),
-(51, NULL, 8, 'SOYNOMBREunoe', '6', 'SOYTIPO', 'Mediano', 1, 'Hembra', 'ES una Nutria salvaje', 'https://picsum.photos/200', -56.337447, -33.268252, 'En adopcion'),
-(52, 16, 8, 'SOYNOMBREdosedittectttttt', '4', 'SOYTIPO', 'Grande', 1, 'Macho', 'ES una Nutria salvaje', 'Data/usuario/animal/cccb15cf-d0f4-4bae-8420-c86941c8e7ee.jpg', -66.337447, -33.268252, 'En recuperacion'),
-(54, NULL, 8, 'SOYNOMBRE', '0.0', 'SOYTIPO', 'Grande', 1, NULL, 'ES una Nutria salvaje', NULL, -66.337473, -33.268249, 'Reportado'),
-(55, NULL, 8, 'SOYNOMBRE', '0.0', 'SOYTIPO', 'Pequeño', 1, NULL, 'ES una Nutria salvaje', NULL, -66.337473, -33.268249, 'Reportado'),
-(56, NULL, 8, 'SOYNOMBRE', '0.0', 'SOYTIPO', 'Mediano', 1, NULL, 'ES una Nutria salvaje', NULL, -66.337473, -33.268249, 'Reportado'),
-(57, NULL, 8, 'SOYNOMBRE', '4.0', 'SOYTIPO', 'Pequeño', 1, 'Macho', 'ES una Nutria salvaje', NULL, -66.337417, -33.268213, 'Reportado'),
-(58, NULL, 8, 'SOYNOMBRE', '3.0', 'SOYTIPO', 'Mediano', 1, 'Hembra', 'ES una Nutria salvaje', NULL, -66.297193, -33.215015, 'Reportado');
+(73, 30, 1, 'Firulais', '3', 'Perro', 'Mediano', 1, 'Macho', 'Encontrado en el parque central', 'Data/usuario/animal/02376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', -33.266110, -66.328357, 'En adopcion'),
+(74, NULL, 1, 'Misi', '1', 'Gato', 'Pequeño', 0, 'Hembra', 'Vista cerca de la tienda de mascotas', 'Data/usuario/animal/12376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.416700, -3.703700, 'En adopcion'),
+(75, 28, 2, 'Bobby', '5', 'Loro', 'Grande', 1, 'Macho', 'Apareció en el vecindario', 'Data/usuario/animal/22376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.417000, -3.704000, 'En recuperacion'),
+(76, 30, 8, 'Luckyy', '2.0', 'Dodo', 'Mediano', 1, 'Macho', 'Encontrado en la plaza', 'Data/usuario/animal/a3e5f80d-933f-48bf-b7f7-4fd02216b190.jpg', 40.418000, -3.705000, 'En recuperacion');
 
 --
 -- Disparadores `animales`
@@ -86,14 +81,6 @@ CREATE TABLE `eventos` (
   `Estado` enum('Programado','En curso','Finalizado','Cancelado') NOT NULL DEFAULT 'Programado'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `eventos`
---
-
-INSERT INTO `eventos` (`Id`, `RefugioId`, `FechaDesde`, `FechaHasta`, `Descripcion`, `Estado`) VALUES
-(1, 1, '2024-04-10 10:00:00', '2024-04-10 14:00:00', 'Jornada de adopción de mascotas', 'Programado'),
-(2, 1, '2024-04-15 09:00:00', '2024-04-15 17:00:00', 'Charla sobre cuidados de animales domésticos', 'Programado');
-
 -- --------------------------------------------------------
 
 --
@@ -102,7 +89,8 @@ INSERT INTO `eventos` (`Id`, `RefugioId`, `FechaDesde`, `FechaHasta`, `Descripci
 
 CREATE TABLE `noticias` (
   `Id` int(11) NOT NULL,
-  `VoluntarioId` int(11) NOT NULL,
+  `UsuarioId` int(11) NOT NULL,
+  `RefugioId` int(11) NOT NULL,
   `BannerUrl` varchar(255) DEFAULT NULL,
   `Categoria` varchar(255) DEFAULT NULL,
   `Titulo` varchar(255) DEFAULT NULL,
@@ -113,14 +101,17 @@ CREATE TABLE `noticias` (
 -- Volcado de datos para la tabla `noticias`
 --
 
-INSERT INTO `noticias` (`Id`, `VoluntarioId`, `BannerUrl`, `Categoria`, `Titulo`, `Contenido`) VALUES
-(3, 16, 'https://random.imagecdn.app/200/200', 'Adopciones', 'Nueva camada de cachorros en busca de hogar', 'Visítanos y conoce a los nuevos integrantes de nuestra familia.'),
-(4, 1, 'https://random.imagecdn.app/200/200', 'Eventos', 'Próxima jornada de adopción de animales domésticos', '¡Estamos emocionados de anunciar nuestra próxima jornada de adopción de animales domésticos!\n\nEl [nombre del refugio] se complace en invitarlos a nuestra próxima jornada de adopción de animales domésticos que se llevará a cabo el próximo fin de semana. Esta es una oportunidad perfecta para encontrar a tu nuevo compañero peludo y darle un hogar amoroso para siempre.\n\nDurante este evento, tendrás la oportunidad de conocer a una variedad de perros y gatos que están buscando su hogar permanente. Nuestro personal estará disponible para ayudarte a encontrar el animal que mejor se adapte a tu estilo de vida y necesidades.\n\nNo te pierdas esta maravillosa oportunidad de encontrar a tu nuevo mejor amigo. ¡Esperamos verte el próximo fin de semana en nuestra jornada de adopción de animales domésticos!\n\n¡No olvides difundir la palabra y ayudarnos a encontrar hogares amorosos para todos nuestros amigos peludos!\n\n¡Te esperamos!'),
-(10, 5, 'url_imagen_1.jpg', 'Refugio de Animales', 'Nueva adopción en el refugio', 'Hoy hemos logrado encontrar un nuevo hogar para uno de nuestros animales. ¡Estamos muy felices por él!'),
-(11, 1, 'url_imagen_2.jpg', 'Refugio de Animales', 'Jornada de adopción este fin de semana', 'Te esperamos este sábado y domingo en nuestro refugio para conocer a nuestros animales en adopción.'),
-(12, 5, 'url_imagen_3.jpg', 'Refugio de Animales', 'Campaña de esterilización gratuita', 'Este mes estaremos realizando esterilizaciones gratuitas para controlar la población de animales callejeros.'),
-(13, 1, 'url_imagen_4.jpg', 'Refugio de Animales', 'Necesitamos voluntarios para pasear a nuestros perros', 'Buscamos personas amantes de los animales que nos ayuden a pasear a nuestros perros cada tarde.'),
-(14, 6, 'url_imagen_5.jpg', 'Refugio de Animales', 'Donación de alimentos para nuestros gatos', '¡Gracias a la generosidad de nuestros colaboradores, nuestros gatos tienen comida para todo el mes!');
+INSERT INTO `noticias` (`Id`, `UsuarioId`, `RefugioId`, `BannerUrl`, `Categoria`, `Titulo`, `Contenido`) VALUES
+(31, 1, 28, 'Data/usuario/noticia/noticia1.jpg', 'Adopción', 'Nueva campaña de adopción', 'En la búsqueda constante de ofrecer un hogar amoroso a los animales abandonados y maltratados, nuestro refugio de animales está emocionado de anunciar el lanzamiento de una nueva campaña de adopción. Esta iniciativa tiene como objetivo principal sensibilizar a la comunidad sobre la importancia de la adopción y proporcionar a nuestros queridos animales la oportunidad de encontrar familias que les ofrezcan el amor y el cuidado que tanto merecen.'),
+(32, 2, 30, 'Data/usuario/noticia/adopcion2.jpg', 'Adopción', 'Adopta un amigo', 'Ven y conoce a los animales que están buscando un hogar lleno de amor.'),
+(33, 3, 28, 'Data/usuario/noticia/adopcion3.jpg', 'Adopción', 'Adopción masiva de mascotas', 'Nuestro refugio organiza una jornada de adopción masiva para todos los animales.'),
+(34, 1, 30, 'Data/usuario/noticia/adopcion4.jpg', 'Adopción', 'Rescate y adopción', 'Rescatamos y buscamos hogar para los animales más necesitados.'),
+(35, 2, 28, 'Data/usuario/noticia/reparacion1.jpg', 'Noticias', 'Actualización sobre el refugio', 'Estamos mejorando nuestras instalaciones para ofrecer un mejor servicio.'),
+(37, 1, 28, 'Data/usuario/noticia/acontecimiento2.jpg', 'Acontecimientos', 'Aparece el gatonejo ', 'En un sorprendente giro de los eventos, se ha descubierto una nueva criatura que ha capturado la imaginación de todos: el Conejo Gato. Este fascinante animal, que parece una mezcla perfecta entre un conejo y un gato, fue avistado por primera vez en los bosques de nuestra ciudad.\n\nEl Conejo Gato combina las orejas largas y el hocico del conejo con la agilidad y el pelaje suave de un gato. Los residentes que han tenido la suerte de verlo describen al Conejo Gato como una criatura extremadamente amistosa y juguetona, que salta como un conejo pero ronronea como un gato.'),
+(38, 3, 30, 'Data/usuario/noticia/consejo1.jpg', 'Consejos', 'Consejos para el verano', 'Mantén a tus mascotas frescas y seguras durante el verano con estos consejos.'),
+(39, 2, 28, 'Data/usuario/noticia/consejo2.jpg', 'Consejos', 'Consejos de salud para mascotas', 'Aprende cómo mantener a tus mascotas saludables y felices.'),
+(40, 1, 30, 'Data/usuario/noticia/frio.jpg', 'Consejos', 'Consejos para el invierno', 'Protege a tus mascotas durante los fríos meses de invierno.'),
+(41, 8, 30, 'Data/usuario/noticia/noticia2.jpg', 'Acontecimientos ', 'Aparece el Nuevo Avatar Perro', 'En un mundo dividido por cuatro reinos caninos - el Reino de los Labradores, la Tribu de los Chihuahuas del Sur, la Nación de los Beagles y los Pastores del Aire - solo un perro puede unirlos a todos: el Avatar Perro. \r\ncon la increíble habilidad de controlar los cuatro elementos del mundo canino: Huesos, Agua Perruna, Fuego Canino y Aire del Parque. Con sus orejas erguidas y su mirada determinada, Luna está listo para embarcarse en aventuras épicas, resolver conflictos entre los reinos caninos y, por supuesto, hacer nuevos amigos peludos en el camino.');
 
 -- --------------------------------------------------------
 
@@ -146,13 +137,8 @@ CREATE TABLE `refugios` (
 --
 
 INSERT INTO `refugios` (`Id`, `UsuarioId`, `Nombre`, `Direccion`, `Descripcion`, `Telefono`, `GPSY`, `GPSX`, `GPSRango`, `BannerUrl`) VALUES
-(1, 2, 'Amigos de los Animales', 'Avenida Central 456', 'Asociación sin fines de lucro para la protección animal', '987-654-3210', -66.268180, -33.337465, 1000, 'https://random.imagecdn.app/200/200'),
-(6, 2, 'Save The Dodo Asociation', 'Parque de los animales 730', 'Dedicados a hacer historia', '2664777777', -66.288012, -33.339856, 500, 'https://random.imagecdn.app/201/200'),
-(12, 8, 'Refugio Esperanza', 'Calle Falsa 123', 'Refugio para animales abandonados', '555-1234', -67.603722, -25.381592, 100, 'http://example.com/banner1.jpg'),
-(13, 8, 'Hogar de Animales', 'Avenida Siempre Viva 742', 'Protección y cuidado de animales', '555-5678', -67.615803, -25.433298, 200, 'http://example.com/banner2.jpg'),
-(14, 8, 'Casa de Mascotas', 'Calle Luna 456', 'Refugio especializado en gatos', '555-8765', -68.599722, -30.381111, 150, 'http://example.com/banner3.jpg'),
-(15, 8, 'Amigos Peludos', 'Calle Estrella 789', 'Rescate y adopción de perros', '555-4321', -69.607222, -31.383611, 120, 'http://example.com/banner4.jpg'),
-(16, 8, 'Refugio Patitas', 'Avenida Sol 1011', 'Cuidado integral para animales domésticos', '555-9999', -28.614722, -35.385000, 180, 'http://example.com/banner5.jpg');
+(28, 2, 'Guarida de los Peludos', 'Calle Verdadera 3,14', 'En la Guarida de los Peludos, trabajamos incansablemente para convertir cada día en una oportunidad para que nuestros peludos encuentren su familia perfecta', '36524444', -66.328357, -33.266110, 1500, 'Data/usuario/refugio/Refugio1.jpg'),
+(30, 8, 'The Dodo`s last resort ', 'Avenida Renacentista 3,14', 'convirtiendo lo imposible en realidad, los dodos regresan.', '2664878787', -66.357042, -33.319771, 1000, 'Data/usuario/refugio/acbb84f6-b073-466d-8627-57390b42bde0.jpg');
 
 -- --------------------------------------------------------
 
@@ -162,6 +148,8 @@ INSERT INTO `refugios` (`Id`, `UsuarioId`, `Nombre`, `Direccion`, `Descripcion`,
 
 CREATE TABLE `tareas` (
   `Id` int(11) NOT NULL,
+  `UsuarioId` int(11) DEFAULT NULL,
+  `RefugioId` int(11) NOT NULL,
   `Actividad` varchar(150) NOT NULL,
   `Descripcion` varchar(250) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -170,17 +158,13 @@ CREATE TABLE `tareas` (
 -- Volcado de datos para la tabla `tareas`
 --
 
-INSERT INTO `tareas` (`Id`, `Actividad`, `Descripcion`) VALUES
-(1, 'Pasear perros', 'Sacar a pasear a los perros del refugio por las mañanas.'),
-(2, 'Limpieza de instalaciones', 'Limpiar las jaulas y áreas de los animales.'),
-(3, 'Alimentación', 'Preparar y distribuir la comida para los animales.'),
-(4, 'Cuidado veterinario', 'Asistir al veterinario en la atención de animales enfermos.'),
-(5, 'Socialización de gatos', 'Jugar y socializar con los gatos del refugio.'),
-(6, 'Mantenimiento de jardines', 'Cuidar y mantener las áreas verdes del refugio.'),
-(7, 'Recepción de animales', 'Recibir y registrar a los animales que ingresan al refugio.'),
-(8, 'Campañas de adopción', 'Organizar y participar en campañas de adopción de animales.'),
-(9, 'Educación comunitaria', 'Impartir charlas sobre tenencia responsable de mascotas.'),
-(10, 'Administración', 'Ayudar con tareas administrativas del refugio.');
+INSERT INTO `tareas` (`Id`, `UsuarioId`, `RefugioId`, `Actividad`, `Descripcion`) VALUES
+(38, 1, 28, 'Alimentar a los animales', 'Darle el té a las nutrias  a las seis de la tarde.'),
+(39, 2, 30, 'Clase de Agilidad', 'Montar una pista de agilidad y entrenar a los perros para mejorar su destreza.'),
+(40, 3, 28, 'Sesión de Fotos', 'Hacer una sesión de fotos profesional para las mascotas del refugio y promover su adopción.'),
+(41, NULL, 30, 'Maratón de Películas de Animales', 'Proyectar películas de animales y permitir que las mascotas se relajen y disfruten.'),
+(42, 8, 28, 'Clases de ingles a los loros', 'Preparar a los loros para su examen de ingles .'),
+(43, NULL, 30, 'Competencia de Talentos', 'Organizar una competencia donde las mascotas muestren sus trucos y habilidades.');
 
 -- --------------------------------------------------------
 
@@ -204,39 +188,10 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`Id`, `Nombre`, `Apellido`, `DNI`, `Telefono`, `Correo`, `Contrasena`, `FotoUrl`) VALUES
-(1, 'Juan', 'Gómez', '12345678', '26647878', 'Gomez@hotmail.com', 'contraseña123', 'http://ejemplo.com/juan.jpg'),
-(2, 'María', 'López', '87654321', '36524444', 'Lopez@hotmail.com', 'clave456', 'http://ejemplo.com/maria.jpg'),
-(3, 'Albert', 'Tesla', '38439123', '08001010', 'Tesla@hotmail.com', 'contraseña123', 'http://ejemplo.com/Albert.jpg'),
-(8, 'Marti', 'Panelo', '38383838', '2664878787', 'martin@panelo.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_825d8925c-3670-4f12-b013-e9c34e1ae660.jpg'),
-(11, 'NombreTest', 'ApellidoTest', '43534539', '266494949', 'test@hotmail.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_11.png'),
-(20, 'contra', 'contra', '11111111', '222222', 'contra@contra.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_20f6a3330d-2ec7-4cd0-8cd2-ae938fb1c6f7.jpg');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `voluntarios`
---
-
-CREATE TABLE `voluntarios` (
-  `Id` int(11) NOT NULL,
-  `UsuarioId` int(11) DEFAULT NULL,
-  `RefugioId` int(11) NOT NULL,
-  `TareaId` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `voluntarios`
---
-
-INSERT INTO `voluntarios` (`Id`, `UsuarioId`, `RefugioId`, `TareaId`) VALUES
-(1, 8, 6, 1),
-(5, 3, 1, 2),
-(6, 8, 15, 3),
-(13, NULL, 15, 3),
-(14, NULL, 6, 4),
-(15, NULL, 16, 4),
-(16, 8, 16, 4),
-(20, NULL, 16, 5);
+(1, 'María', 'Gomez', '12345678', '26647878', 'Gomez@hotmail.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_1e6c82e2e-5eda-490a-ad17-71830f2051e5.jpg'),
+(2, 'Rufina', 'López', '87654321', '36524444', 'Lopez@hotmail.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_1e6c82e2e-5eda-490a-ad17-71830f2051e9.jpg'),
+(3, 'Albert', 'Tesla', '38439123', '08001010', 'Tesla@hotmail.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_1e6c82e2e-5eda-490a-ad17-71830f2051e6.jpg'),
+(8, 'Marti', 'Panelo', '38383838', '2664878787', 'martin@panelo.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_825d8925c-3670-4f12-b013-e9c34e1ae660.jpg');
 
 --
 -- Índices para tablas volcadas
@@ -262,7 +217,8 @@ ALTER TABLE `eventos`
 --
 ALTER TABLE `noticias`
   ADD PRIMARY KEY (`Id`),
-  ADD KEY `VoluntarioId` (`VoluntarioId`) USING BTREE;
+  ADD KEY `RefugioId` (`RefugioId`),
+  ADD KEY `UsuarioId` (`UsuarioId`);
 
 --
 -- Indices de la tabla `refugios`
@@ -275,22 +231,15 @@ ALTER TABLE `refugios`
 -- Indices de la tabla `tareas`
 --
 ALTER TABLE `tareas`
-  ADD PRIMARY KEY (`Id`);
+  ADD PRIMARY KEY (`Id`),
+  ADD KEY `UsuarioId` (`UsuarioId`),
+  ADD KEY `RefugioId` (`RefugioId`);
 
 --
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`Id`);
-
---
--- Indices de la tabla `voluntarios`
---
-ALTER TABLE `voluntarios`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `UsuarioId` (`UsuarioId`) USING BTREE,
-  ADD KEY `RefugioId` (`RefugioId`) USING BTREE,
-  ADD KEY `TareaId` (`TareaId`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -300,7 +249,7 @@ ALTER TABLE `voluntarios`
 -- AUTO_INCREMENT de la tabla `animales`
 --
 ALTER TABLE `animales`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
 
 --
 -- AUTO_INCREMENT de la tabla `eventos`
@@ -312,31 +261,25 @@ ALTER TABLE `eventos`
 -- AUTO_INCREMENT de la tabla `noticias`
 --
 ALTER TABLE `noticias`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT de la tabla `refugios`
 --
 ALTER TABLE `refugios`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT de la tabla `tareas`
 --
 ALTER TABLE `tareas`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
-
---
--- AUTO_INCREMENT de la tabla `voluntarios`
---
-ALTER TABLE `voluntarios`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Restricciones para tablas volcadas
@@ -359,7 +302,8 @@ ALTER TABLE `eventos`
 -- Filtros para la tabla `noticias`
 --
 ALTER TABLE `noticias`
-  ADD CONSTRAINT `noticias_ibfk_1` FOREIGN KEY (`VoluntarioId`) REFERENCES `voluntarios` (`Id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `noticias_ibfk_1` FOREIGN KEY (`UsuarioId`) REFERENCES `usuarios` (`Id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `noticias_ibfk_2` FOREIGN KEY (`RefugioId`) REFERENCES `refugios` (`Id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `refugios`
@@ -368,12 +312,11 @@ ALTER TABLE `refugios`
   ADD CONSTRAINT `refugio_ibfk_1` FOREIGN KEY (`UsuarioId`) REFERENCES `usuarios` (`Id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `voluntarios`
+-- Filtros para la tabla `tareas`
 --
-ALTER TABLE `voluntarios`
-  ADD CONSTRAINT `voluntario_ibfk_1` FOREIGN KEY (`UsuarioId`) REFERENCES `usuarios` (`Id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `voluntario_ibfk_2` FOREIGN KEY (`RefugioId`) REFERENCES `refugios` (`Id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `voluntarios_ibfk_1` FOREIGN KEY (`TareaId`) REFERENCES `tareas` (`Id`) ON DELETE CASCADE;
+ALTER TABLE `tareas`
+  ADD CONSTRAINT `tareas_ibfk_1` FOREIGN KEY (`UsuarioId`) REFERENCES `usuarios` (`Id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tareas_ibfk_2` FOREIGN KEY (`RefugioId`) REFERENCES `refugios` (`Id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
