@@ -95,11 +95,7 @@ namespace API_Animalogistics.Controllers
                                               .Include(e => e.Usuario)
                                               .Where(e => e.RefugioId == refugioId)
                                               .ToListAsync();
-                if (noticias == null || !noticias.Any())
-                {
-                    return NotFound(new { SinNoticas = "No se encontraron noticias para este refugio." });
-
-                }
+                
                 return Ok(noticias);
             }
             catch (Exception ex)

@@ -97,7 +97,7 @@ namespace API_Animalogistics.Controllers
 		}
 
 
-		[HttpGet("refugioPorId")]
+		[HttpGet("refugioPorId")]// refugio por id y dueno
 		[Authorize]
 		public async Task<IActionResult> RefugioPorId(int refugioId)
 		{

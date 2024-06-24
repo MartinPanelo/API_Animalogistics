@@ -185,7 +185,7 @@ namespace API_Animalogistics.Controllers
                 } */
                 else{
 
-                    return BadRequest(new { mensaje ="No tiene permisos para borrar esta tarea."});
+                    return BadRequest(new { permiso ="No tiene permisos para borrar esta tarea."});
                 }
 
 
@@ -369,7 +369,7 @@ namespace API_Animalogistics.Controllers
                                               .SingleOrDefaultAsync(e => e.Id == tarea.RefugioId && e.Usuario == usuario);
                 if (refugio == null)
                 {
-                    return BadRequest(new { mensaje = "Refugio no encontrado." });
+                    return BadRequest(new { mensaje = "Refugio no encontrado o no es el duenio." });
                 }
 
                 
