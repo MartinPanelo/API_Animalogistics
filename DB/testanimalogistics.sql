@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 23-06-2024 a las 22:57:53
+-- Servidor: localhost
+-- Tiempo de generación: 24-06-2024 a las 06:00:18
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `testtest`
+-- Base de datos: `testanimalogistics`
 --
 
 -- --------------------------------------------------------
@@ -50,9 +50,10 @@ CREATE TABLE `animales` (
 
 INSERT INTO `animales` (`Id`, `RefugioId`, `UsuarioId`, `Nombre`, `Edad`, `Tipo`, `Tamano`, `Collar`, `Genero`, `Comentarios`, `FotoUrl`, `GPSY`, `GPSX`, `Estado`) VALUES
 (73, 30, 1, 'Firulais', '3', 'Perro', 'Mediano', 1, 'Macho', 'Encontrado en el parque central', 'Data/usuario/animal/02376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', -33.266110, -66.328357, 'En adopcion'),
-(74, NULL, 1, 'Misi', '1', 'Gato', 'Pequeño', 0, 'Hembra', 'Vista cerca de la tienda de mascotas', 'Data/usuario/animal/12376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.416700, -3.703700, 'En adopcion'),
+(74, 30, 1, 'Misi', '1', 'Gato', 'Pequeño', 0, 'Hembra', 'Vista cerca de la tienda de mascotas', 'Data/usuario/animal/12376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.416700, -3.703700, 'En adopcion'),
 (75, 28, 2, 'Bobby', '5', 'Loro', 'Grande', 1, 'Macho', 'Apareció en el vecindario', 'Data/usuario/animal/22376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.417000, -3.704000, 'En recuperacion'),
-(76, 30, 8, 'Luckyy', '2.0', 'Dodo', 'Mediano', 1, 'Macho', 'Encontrado en la plaza', 'Data/usuario/animal/a3e5f80d-933f-48bf-b7f7-4fd02216b190.jpg', 40.418000, -3.705000, 'En recuperacion');
+(76, NULL, 8, 'Luckyy', '2.0', 'Dodo', 'Mediano', 1, 'Macho', 'Encontrado en la plaza', 'Data/usuario/animal/a3e5f80d-933f-48bf-b7f7-4fd02216b190.jpg', 40.418000, -3.705000, 'En recuperacion'),
+(78, NULL, 30, NULL, '5.0', 'osito', 'Mediano', 0, 'Macho', 'peligroso', 'Data/usuario/animal/4c7cdb3e-9cc1-41b4-b66b-5dc5b1041325.jpg', -66.297078, -33.295088, 'Reportado');
 
 --
 -- Disparadores `animales`
@@ -111,7 +112,7 @@ INSERT INTO `noticias` (`Id`, `UsuarioId`, `RefugioId`, `BannerUrl`, `Categoria`
 (38, 3, 30, 'Data/usuario/noticia/consejo1.jpg', 'Consejos', 'Consejos para el verano', 'Mantén a tus mascotas frescas y seguras durante el verano con estos consejos.'),
 (39, 2, 28, 'Data/usuario/noticia/consejo2.jpg', 'Consejos', 'Consejos de salud para mascotas', 'Aprende cómo mantener a tus mascotas saludables y felices.'),
 (40, 1, 30, 'Data/usuario/noticia/frio.jpg', 'Consejos', 'Consejos para el invierno', 'Protege a tus mascotas durante los fríos meses de invierno.'),
-(41, 8, 30, 'Data/usuario/noticia/noticia2.jpg', 'Acontecimientos ', 'Aparece el Nuevo Avatar Perro', 'En un mundo dividido por cuatro reinos caninos - el Reino de los Labradores, la Tribu de los Chihuahuas del Sur, la Nación de los Beagles y los Pastores del Aire - solo un perro puede unirlos a todos: el Avatar Perro. \r\ncon la increíble habilidad de controlar los cuatro elementos del mundo canino: Huesos, Agua Perruna, Fuego Canino y Aire del Parque. Con sus orejas erguidas y su mirada determinada, Luna está listo para embarcarse en aventuras épicas, resolver conflictos entre los reinos caninos y, por supuesto, hacer nuevos amigos peludos en el camino.');
+(41, 8, 30, 'Data/usuario/noticia/noticia2.jpg', 'Acontecimientos', 'Aparece el Nuevo Avatar Perro', 'En un mundo dividido por cuatro reinos caninos - el Reino de los Labradores, la Tribu de los Chihuahuas del Sur, la Nación de los Beagles y los Pastores del Aire - solo un perro puede unirlos a todos: el Avatar Perro. \r\ncon la increíble habilidad de controlar los cuatro elementos del mundo canino: Huesos, Agua Perruna, Fuego Canino y Aire del Parque. Con sus orejas erguidas y su mirada determinada, Luna está listo para embarcarse en aventuras épicas, resolver conflictos entre los reinos caninos y, por supuesto, hacer nuevos amigos peludos en el camino.');
 
 -- --------------------------------------------------------
 
@@ -137,7 +138,7 @@ CREATE TABLE `refugios` (
 --
 
 INSERT INTO `refugios` (`Id`, `UsuarioId`, `Nombre`, `Direccion`, `Descripcion`, `Telefono`, `GPSY`, `GPSX`, `GPSRango`, `BannerUrl`) VALUES
-(28, 2, 'Guarida de los Peludos', 'Calle Verdadera 3,14', 'En la Guarida de los Peludos, trabajamos incansablemente para convertir cada día en una oportunidad para que nuestros peludos encuentren su familia perfecta', '36524444', -66.328357, -33.266110, 1500, 'Data/usuario/refugio/Refugio1.jpg'),
+(28, 2, 'Guarida de los Peludos', 'Calle Verdadera 3,14', 'En la Guarida de los Peludos, trabajamos incansablemente para convertir cada día en una oportunidad para que nuestros peludos encuentren su familia perfecta', '36524444', -66.328357, -33.266110, 1500, 'Data/usuario/refugio/Refugio1.png'),
 (30, 8, 'The Dodo`s last resort ', 'Avenida Renacentista 3,14', 'convirtiendo lo imposible en realidad, los dodos regresan.', '2664878787', -66.357042, -33.319771, 1000, 'Data/usuario/refugio/acbb84f6-b073-466d-8627-57390b42bde0.jpg');
 
 -- --------------------------------------------------------
@@ -164,7 +165,7 @@ INSERT INTO `tareas` (`Id`, `UsuarioId`, `RefugioId`, `Actividad`, `Descripcion`
 (40, 3, 28, 'Sesión de Fotos', 'Hacer una sesión de fotos profesional para las mascotas del refugio y promover su adopción.'),
 (41, NULL, 30, 'Maratón de Películas de Animales', 'Proyectar películas de animales y permitir que las mascotas se relajen y disfruten.'),
 (42, 8, 28, 'Clases de ingles a los loros', 'Preparar a los loros para su examen de ingles .'),
-(43, NULL, 30, 'Competencia de Talentos', 'Organizar una competencia donde las mascotas muestren sus trucos y habilidades.');
+(43, 30, 30, 'Competencia de Talentos', 'Organizar una competencia donde las mascotas muestren sus trucos y habilidades.');
 
 -- --------------------------------------------------------
 
@@ -191,7 +192,8 @@ INSERT INTO `usuarios` (`Id`, `Nombre`, `Apellido`, `DNI`, `Telefono`, `Correo`,
 (1, 'María', 'Gomez', '12345678', '26647878', 'Gomez@hotmail.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_1e6c82e2e-5eda-490a-ad17-71830f2051e5.jpg'),
 (2, 'Rufina', 'López', '87654321', '36524444', 'Lopez@hotmail.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_1e6c82e2e-5eda-490a-ad17-71830f2051e9.jpg'),
 (3, 'Albert', 'Tesla', '38439123', '08001010', 'Tesla@hotmail.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_1e6c82e2e-5eda-490a-ad17-71830f2051e6.jpg'),
-(8, 'Marti', 'Panelo', '38383838', '2664878787', 'martin@panelo.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_825d8925c-3670-4f12-b013-e9c34e1ae660.jpg');
+(8, 'Marti', 'Panelo', '38383838', '2664878787', 'martin@panelo.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_825d8925c-3670-4f12-b013-e9c34e1ae660.jpg'),
+(30, 'contra', 'contra', '11111124', '222222', 'contra@contra.com', 'ipKy7T47aO1Abua2D4f7lyBoJaTBcnE1jdSE0iGhDLI=', 'Data/usuario/avatar_304882f444-ce15-4392-af16-a82f50bfa7c8.jpg');
 
 --
 -- Índices para tablas volcadas
@@ -249,7 +251,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `animales`
 --
 ALTER TABLE `animales`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT de la tabla `eventos`
@@ -279,7 +281,7 @@ ALTER TABLE `tareas`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- Restricciones para tablas volcadas
