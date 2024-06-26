@@ -14,10 +14,6 @@ namespace API_Animalogistics.Controllers
 		private readonly IConfiguration _config = _config;
 
 
-		//LISTAR REFUGIOS POR FILTRO DE DISTANCIA GPS
-
-
-
 		[HttpGet("refugioLista")]// obtengo todos los refugios
 		[Authorize]
 		public async Task<IActionResult> RefugioLista()
@@ -80,12 +76,12 @@ namespace API_Animalogistics.Controllers
 											  .Where(r => r.Usuario.Correo == UsuarioLogeado)
 											  .ToListAsync();
 
-			/* 	if (refugios == null || refugios.Count == 0)
-				{
-					// Si no se encuentran refugios para el usuario actual
-					    return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
+				/* 	if (refugios == null || refugios.Count == 0)
+					{
+						// Si no se encuentran refugios para el usuario actual
+							return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
 
-				} */
+					} */
 
 				return Ok(refugios);
 			}
@@ -121,12 +117,12 @@ namespace API_Animalogistics.Controllers
 											  .Where(r => r.Usuario == usuario && r.Id == refugioId)
 											  .FirstOrDefaultAsync();
 
-			 	if (refugio == null)
+				if (refugio == null)
 				{
 					// Si no se encuentran refugios para el usuario actual
-					    return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
+					return NotFound(new { mensaje = "No se encontraron refugios para el usuario actual." });
 
-				} 
+				}
 
 				return Ok(refugio);
 			}
@@ -146,9 +142,9 @@ namespace API_Animalogistics.Controllers
 			{
 				var UsuarioLogeado = User.Identity.Name;
 
-			
 
-				var voluntarioPorTarea =  _contexto.Tareas
+
+				var voluntarioPorTarea = _contexto.Tareas
 								.Include(t => t.Refugio)
 								.Include(t => t.Usuario)
 								.Where(t => t.Usuario.Correo == UsuarioLogeado && t.Refugio.Usuario.Correo != UsuarioLogeado)
@@ -156,7 +152,7 @@ namespace API_Animalogistics.Controllers
 								.Distinct()
 								.ToList();
 
-				var voluntarioPorNoticia =  _contexto.Noticias
+				var voluntarioPorNoticia = _contexto.Noticias
 								.Include(t => t.Refugio)
 								.Include(t => t.Usuario)
 								.Where(t => t.Usuario.Correo == UsuarioLogeado && t.Refugio.Usuario.Correo != UsuarioLogeado)
@@ -200,7 +196,8 @@ namespace API_Animalogistics.Controllers
 				}
 
 
-				if(refugio.BannerFile != null){
+				if (refugio.BannerFile != null)
+				{
 					string PathData = _config["Data:refugioImg"];
 
 					var BannerUrl = Guid.NewGuid().ToString() + Path.GetExtension(refugio.BannerFile.FileName);
@@ -222,7 +219,7 @@ namespace API_Animalogistics.Controllers
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);			
+				Console.WriteLine(ex.Message);
 				return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
 			}
 
@@ -267,37 +264,37 @@ namespace API_Animalogistics.Controllers
 				refugioEditado.UsuarioId = RefugioExistente.UsuarioId;
 
 				if (refugioEditado.BannerFile != null)
-                    {
+				{
 
 
-                        if (RefugioExistente.BannerUrl != null)
-                        {
-                            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-                            
-                            string fullPath = Path.Combine(basePath, RefugioExistente.BannerUrl);
-                            
-                            Console.WriteLine(fullPath);
-                            if (System.IO.File.Exists(RefugioExistente.BannerUrl))
-                            {
-                                System.IO.File.Delete(RefugioExistente.BannerUrl);
-                            }
+					if (RefugioExistente.BannerUrl != null)
+					{
+						string basePath = AppDomain.CurrentDomain.BaseDirectory;
 
-                        }
+						string fullPath = Path.Combine(basePath, RefugioExistente.BannerUrl);
 
-                        var refugioImagen = Guid.NewGuid().ToString() + Path.GetExtension(refugioEditado.BannerFile.FileName);
+						Console.WriteLine(fullPath);
+						if (System.IO.File.Exists(RefugioExistente.BannerUrl))
+						{
+							System.IO.File.Delete(RefugioExistente.BannerUrl);
+						}
 
-                        string pathCompleto = _config["Data:refugioImg"] + refugioImagen;
+					}
 
-                      //  RefugioExistente.BannerUrl = pathCompleto;
-                        using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
-                        {
-                            refugioEditado.BannerFile.CopyTo(stream);
-                        }
-						refugioEditado.BannerUrl = pathCompleto;
+					var refugioImagen = Guid.NewGuid().ToString() + Path.GetExtension(refugioEditado.BannerFile.FileName);
+
+					string pathCompleto = _config["Data:refugioImg"] + refugioImagen;
+
+					//  RefugioExistente.BannerUrl = pathCompleto;
+					using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+					{
+						refugioEditado.BannerFile.CopyTo(stream);
+					}
+					refugioEditado.BannerUrl = pathCompleto;
 
 
-                    }
-				
+				}
+
 
 				// Actualizo el refugio
 				_contexto.Refugios.Update(refugioEditado);

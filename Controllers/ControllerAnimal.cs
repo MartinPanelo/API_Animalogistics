@@ -14,7 +14,6 @@ namespace API_Animalogistics.Controllers
         private readonly IConfiguration _config = _config;
 
 
-
         [HttpPost("animalAgregar")]// Un usuario registra un animal 
         [Authorize]
         public async Task<IActionResult> AnimalAgregar([FromForm] Animal animal)
@@ -120,12 +119,6 @@ namespace API_Animalogistics.Controllers
                                               .Where(a => a.RefugioId == refugioId)
                                               .ToListAsync();
 
-                /*    if (animales == null || !animales.Any())
-                   {
-                       // Si no se encuentran animales
-                       return NotFound("No se encontraron animales para el refugio actual.");
-                   }
-    */
                 return Ok(animales);
             }
             catch (Exception ex)
@@ -240,9 +233,10 @@ namespace API_Animalogistics.Controllers
                     animalExiste.Comentarios = animalEditado.Comentarios;
                     animalExiste.GPSX = animalEditado.GPSX;
                     animalExiste.GPSY = animalEditado.GPSY;
+                    animalExiste.Estado = animalEditado.Estado;
 
 
-                   
+
 
                     if (animalEditado.FotoFile != null)
                     {
@@ -251,9 +245,9 @@ namespace API_Animalogistics.Controllers
                         if (animalExiste.FotoUrl != null)
                         {
                             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-                            
+
                             string fullPath = Path.Combine(basePath, animalExiste.FotoUrl);
-                            
+
                             Console.WriteLine(fullPath);
                             if (System.IO.File.Exists(animalExiste.FotoUrl)/*  && !animalEditado.FotoUrl.Contains("Defaultanimal.jpeg") */)
                             {
@@ -401,14 +395,6 @@ namespace API_Animalogistics.Controllers
 
 
         }
-
-
-        // solo el usuario puede borrar animales que el halla registrado
-        // y que no esten asociados a un refugio
-        //-
-        // un refugio no puede borrar animales, puedo asocialos a ellos y desasociarlos
-
-
 
     }
 

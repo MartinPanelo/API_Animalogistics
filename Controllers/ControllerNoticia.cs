@@ -95,7 +95,7 @@ namespace API_Animalogistics.Controllers
                                               .Include(e => e.Usuario)
                                               .Where(e => e.RefugioId == refugioId)
                                               .ToListAsync();
-                
+
                 return Ok(noticias);
             }
             catch (Exception ex)
@@ -103,63 +103,6 @@ namespace API_Animalogistics.Controllers
                 return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
             }
         }
-
-
-        /*    //listar todas las noticias de un refugio que es dueño o voluntario
-          [HttpGet("noticiaListarPorRefugioGestion")]
-          [Authorize]
-          public async Task<IActionResult> NoticiaListarPorRefugioGestion(int refugioId)
-          {
-              try
-              {
-
-                  //Comprobar que el refugio exista
-                  var refugio =  _contexto.Refugios
-                                                .Include(e => e.Usuario)
-                                                .FirstOrDefault(e => e.Id == refugioId);
-                  if (refugio == null)
-                  {
-                      return BadRequest("Refugio no encontrado."+ refugioId);
-                  }
-                  // revisar que el usuario exista 
-                  var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
-
-                  if (usuario == null)
-                  {
-                      return BadRequest("Usuario no encontrado.");
-                  }
-
-                  //El usuario es dueno del refugio?
-                  var noticias = new List<Noticia>();
-                  if(refugio.Usuario == usuario){
-
-                       noticias = await _contexto.Noticias
-                                                .Include(v => v.Refugio)       
-                                                .Include(v => v.Usuario)                                      
-                                                .Where( v =>v.RefugioId == refugioId)                                            
-                                                .ToListAsync();
-
-                  } // esta siendo voluntario de un refugio?
-
-                  else
-                  {
-                      noticias = await _contexto.Noticias
-                                                .Include(v => v.Refugio)       
-                                                .Include(v => v.Usuario)                                      
-                                                .Where( v =>v.RefugioId == refugioId && v.Usuario == usuario)                                            
-                                                .ToListAsync();
-
-                  }
-
-                  return Ok(noticias);
-              }
-              catch (Exception ex)
-              {
-                  return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
-              }
-          }
-   */
-
 
         //listar todas las noticias por categoria de un refugio
         [HttpGet("noticiaListarPorRefugioPorCategoria")]
@@ -237,12 +180,13 @@ namespace API_Animalogistics.Controllers
                 var RefugioVoluntarioPorTarea = _contexto.Tareas
                                 .Include(t => t.Refugio)
                                 .Include(t => t.Usuario)
-                                .Where(t => t.Usuario == usuario || t.Refugio.Usuario == usuario)
-                                .Select(t => t.Refugio)
-                                .Distinct()
+                                .Where(t => t.RefugioId == noticia.RefugioId)
+                                /* .Select(t => t.Refugio) */
                                 .ToList();
 
-                if (RefugioVoluntarioPorTarea.Any(r => r.Id == refugio.Id))
+
+
+                if (RefugioVoluntarioPorTarea.Any(r => r.UsuarioId == usuario.Id) || (refugio.UsuarioId == usuario.Id))
                 {
 
                     noticia.Usuario = usuario;
@@ -264,9 +208,11 @@ namespace API_Animalogistics.Controllers
                     _contexto.Noticias.Add(noticia);
                     await _contexto.SaveChangesAsync();
                     return Ok(noticia);
-                }else{
+                }
+                else
+                {
 
-                    return BadRequest(new { mensaje = "No eres dueño del refugio o tiene una tarea asignada." });
+                    return BadRequest(new { mensaje = "No eres dueño del refugio o no tiene una tarea asignada." });
                 }
 
 

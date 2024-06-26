@@ -62,7 +62,7 @@ namespace API_Animalogistics.Controllers
 							//Path.GetFileName(u.AvatarFile.FileName);//este nombre se puede repetir
 
 							string fileName = "avatar_" + usuario.Id + Guid.NewGuid().ToString() + Path.GetExtension(usuario.FotoFile.FileName);
-							
+
 							string pathCompleto = Path.Combine(PathData, fileName);
 							usuario.FotoUrl = Path.Combine(_config["Data:usuarioImg"], fileName);
 							// Esta operación guarda la foto en memoria en la ruta que necesitamos
@@ -260,13 +260,14 @@ namespace API_Animalogistics.Controllers
 
 					//primero borro la foto que tiene el usuario si es que tiene
 					string PathData = _config["Data:usuarioImg"];
-					
-					if(!string.IsNullOrEmpty(usuarioOriginal.FotoUrl)){
+
+					if (!string.IsNullOrEmpty(usuarioOriginal.FotoUrl))
+					{
 
 
 						//string DirActual = Path.Combine(PathData, usuarioOriginal.FotoUrl);
 
-						
+
 
 						if (System.IO.File.Exists(usuarioOriginal.FotoUrl))
 						{
@@ -274,7 +275,7 @@ namespace API_Animalogistics.Controllers
 						}
 					}
 
-					
+
 
 					// le registro la nueva foto
 
@@ -282,7 +283,7 @@ namespace API_Animalogistics.Controllers
 					string DirNuevaCompleta = Path.Combine(PathData, DirNueva);
 					usuarioOriginal.FotoUrl = DirNuevaCompleta;
 
-				
+
 					using (FileStream stream = new FileStream(DirNuevaCompleta, FileMode.Create))
 					{
 						UsuarioEditado.FotoFile.CopyTo(stream);
