@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 24-06-2024 a las 10:26:11
+-- Tiempo de generación: 26-06-2024 a las 12:35:14
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -41,7 +41,7 @@ CREATE TABLE `animales` (
   `FotoUrl` varchar(255) DEFAULT NULL,
   `GPSY` decimal(8,6) DEFAULT NULL,
   `GPSX` decimal(9,6) DEFAULT NULL,
-  `Estado` enum('Reportado','En recuperacion','En adopcion') DEFAULT 'Reportado'
+  `Estado` enum('Reportado','En recuperacion','En adopcion','Adoptado') NOT NULL DEFAULT 'Reportado'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -49,11 +49,11 @@ CREATE TABLE `animales` (
 --
 
 INSERT INTO `animales` (`Id`, `RefugioId`, `UsuarioId`, `Nombre`, `Edad`, `Tipo`, `Tamano`, `Collar`, `Genero`, `Comentarios`, `FotoUrl`, `GPSY`, `GPSX`, `Estado`) VALUES
-(73, 30, 1, 'Firulais', '3', 'Perro', 'Mediano', 1, 'Macho', 'Encontrado en el parque central', 'Data/usuario/animal/02376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', -33.266110, -66.328357, 'En adopcion'),
-(74, 30, 1, 'Misi', '1', 'Gato', 'Pequeño', 0, 'Hembra', 'Vista cerca de la tienda de mascotas', 'Data/usuario/animal/12376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.416700, -3.703700, 'En adopcion'),
-(75, 28, 2, 'Bobby', '5', 'Loro', 'Grande', 1, 'Macho', 'Apareció en el vecindario', 'Data/usuario/animal/22376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.417000, -3.704000, 'En recuperacion'),
-(76, NULL, 8, 'Luckyy', '2.0', 'Dodo', 'Mediano', 1, 'Macho', 'Encontrado en la plaza', 'Data/usuario/animal/a3e5f80d-933f-48bf-b7f7-4fd02216b190.jpg', -66.418000, -33.705000, 'En recuperacion'),
-(78, 33, 30, 'Winnie', '5.0', 'osito', 'Mediano', 0, 'Macho', 'peligroso', 'Data/usuario/animal/f7d729d3-c7ea-44ed-8453-594f036245e3.jpg', -66.297078, -33.295088, 'En recuperacion');
+(73, 30, 8, 'Firulais', '3.0', 'Perro', 'Mediano', 1, 'Macho', 'Encontrado en el parque central', 'Data/usuario/animal/0a5f1022-09c1-4b31-bdd3-a1a6ff59a107.jpg', -33.266110, -66.328357, 'En recuperacion'),
+(74, 30, 1, 'Misi', '1', 'Gato', 'Pequeño', 0, 'Hembra', 'Vista cerca de la tienda de mascotas', 'Data/usuario/animal/12376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.416700, -3.703700, 'En recuperacion'),
+(75, 30, 2, 'Bobby', '5', 'Loro', 'Grande', 1, 'Macho', 'Apareció en el vecindario', 'Data/usuario/animal/22376ee5-0b04-4a1d-a622-0fa032c397e4.jpg', 40.417000, -33.704000, 'En recuperacion'),
+(76, 30, 8, 'Luckyy', '2.0', 'Dodo', 'Mediano', 1, 'Macho', 'Encontrado en la plaza', 'Data/usuario/animal/a3e5f80d-933f-48bf-b7f7-4fd02216b190.jpg', -66.418000, -33.705000, 'En recuperacion'),
+(78, 28, 30, 'Winnie', '5.0', 'osito', 'Mediano', 0, 'Macho', 'peligroso', 'Data/usuario/animal/f7d729d3-c7ea-44ed-8453-594f036245e3.jpg', -66.297078, -33.295088, 'En recuperacion');
 
 --
 -- Disparadores `animales`
@@ -66,21 +66,6 @@ CREATE TRIGGER `estado_default_animal` BEFORE INSERT ON `animales` FOR EACH ROW 
 END
 $$
 DELIMITER ;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `eventos`
---
-
-CREATE TABLE `eventos` (
-  `Id` int(11) NOT NULL,
-  `RefugioId` int(11) NOT NULL,
-  `FechaDesde` datetime DEFAULT NULL,
-  `FechaHasta` datetime DEFAULT NULL,
-  `Descripcion` varchar(255) DEFAULT NULL,
-  `Estado` enum('Programado','En curso','Finalizado','Cancelado') NOT NULL DEFAULT 'Programado'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -114,7 +99,12 @@ INSERT INTO `noticias` (`Id`, `UsuarioId`, `RefugioId`, `BannerUrl`, `Categoria`
 (40, 1, 30, 'Data/usuario/noticia/frio.jpg', 'Consejos', 'Consejos para el invierno', 'Protege a tus mascotas durante los fríos meses de invierno.'),
 (41, 8, 30, 'Data/usuario/noticia/noticia2.jpg', 'Acontecimientos', 'Aparece el Nuevo Avatar Perro', 'En un mundo dividido por cuatro reinos caninos - el Reino de los Labradores, la Tribu de los Chihuahuas del Sur, la Nación de los Beagles y los Pastores del Aire - solo un perro puede unirlos a todos: el Avatar Perro. \r\ncon la increíble habilidad de controlar los cuatro elementos del mundo canino: Huesos, Agua Perruna, Fuego Canino y Aire del Parque. Con sus orejas erguidas y su mirada determinada, Luna está listo para embarcarse en aventuras épicas, resolver conflictos entre los reinos caninos y, por supuesto, hacer nuevos amigos peludos en el camino.'),
 (42, 30, 30, 'Data/usuario/noticia/fd22de3b-f45f-4223-bb03-5107d8f331ab.jpg', 'Vagancia', '🐕 perro duerme todo el día ', 'en un giro de eventos , no pasa nada.'),
-(43, 30, 33, 'Data/usuario/noticia/4fb6611b-28fb-4c98-ab06-2e0988154ac1.jpg', 'Peligro', 'Se escapó el tigre 🐅🐅🐅🐅🐅', 'se escapó el tigre y es muy grande ');
+(43, 30, 33, 'Data/usuario/noticia/4fb6611b-28fb-4c98-ab06-2e0988154ac1.jpg', 'Peligro', 'Se escapó el tigre 🐅🐅🐅🐅🐅', 'se escapó el tigre y es muy grande '),
+(45, 8, 30, NULL, 'Qwea', 'Asd', 'zxc'),
+(46, 8, 36, 'Data/usuario/noticia/94438f40-a145-49e6-87c1-aa0eacc1d9ff.jpg', 'Asd', 'Errt', 'jhggf'),
+(47, 8, 28, NULL, 'T3grh', 'Vrhrh', '7rbtbtb'),
+(48, 8, 36, 'Data/usuario/noticia/677f8dea-35bb-459b-ab3a-de979748aff2.jpg', 'Vegeehve', 'Hdehhebeeh', 'fbvfhrhrh'),
+(49, 8, 28, 'Data/usuario/noticia/9ef7c180-f4d9-4a0d-928d-6397f255902e.jpg', '5ehehbwjekek', 'Etkdtkwtj', 'dtndtjwtjwtjwtj');
 
 -- --------------------------------------------------------
 
@@ -141,8 +131,10 @@ CREATE TABLE `refugios` (
 
 INSERT INTO `refugios` (`Id`, `UsuarioId`, `Nombre`, `Direccion`, `Descripcion`, `Telefono`, `GPSY`, `GPSX`, `GPSRango`, `BannerUrl`) VALUES
 (28, 2, 'Guarida de los Peludos', 'Calle Verdadera 3,14', 'En la Guarida de los Peludos, trabajamos incansablemente para convertir cada día en una oportunidad para que nuestros peludos encuentren su familia perfecta', '36524444', -66.328357, -33.266110, 1500, 'Data/usuario/refugio/Refugio1.png'),
-(30, 8, 'The Dodo`s last resort ', 'Avenida Renacentista 3,14', 'convirtiendo lo imposible en realidad, los dodos regresan.', '2664878787', -66.357042, -33.319771, 1000, 'Data/usuario/refugio/acbb84f6-b073-466d-8627-57390b42bde0.jpg'),
-(33, 30, 'the adapter ', 'av cable ', 'el mejor refugio de la historia \n', '222222', -66.393825, -33.267743, 1499, 'Data/usuario/refugio/af453b78-ffc3-4815-bb0b-d29d92e09189.jpg');
+(30, 8, 'The Dodo`s last resort ', 'Avenida Renacentista 3,14', 'convirtiendo lo imposible en realidad,  \n los dodos regresan.', '2664878787', -66.357042, -33.319771, 1000, 'Data/usuario/refugio/acbb84f6-b073-466d-8627-57390b42bde0.jpg'),
+(33, 30, 'the adapter ', 'av cable ', 'el mejor refugio de la historia \n', '222222', -66.393825, -33.267743, 1499, 'Data/usuario/refugio/af453b78-ffc3-4815-bb0b-d29d92e09189.jpg'),
+(35, 8, 'djdkdzz', 'mffkfk', 'disididkd', '3939393', -66.337456, -33.268240, 150, 'Data/usuario/refugio/77dbdf45-a32b-46de-951c-136161ef57f7.jpg'),
+(36, 8, 'rhrjr', 'ehrjrj', 'fbfbrhr', '525253548', -66.341576, -33.271414, 500, NULL);
 
 -- --------------------------------------------------------
 
@@ -169,7 +161,8 @@ INSERT INTO `tareas` (`Id`, `UsuarioId`, `RefugioId`, `Actividad`, `Descripcion`
 (41, NULL, 30, 'Maratón de Películas de Animales', 'Proyectar películas de animales y permitir que las mascotas se relajen y disfruten.'),
 (42, 8, 28, 'Clases de ingles a los loros', 'Preparar a los loros para su examen de ingles .'),
 (43, 30, 30, 'Competencia de Talentos', 'Organizar una competencia donde las mascotas muestren sus trucos y habilidades.'),
-(44, NULL, 33, 'alimentar al tigre 🐯🐯🐯🐯', 'come mucho ');
+(44, NULL, 33, 'alimentar al tigre 🐯🐯🐯🐯', 'come mucho '),
+(46, 8, 30, 'asd', 'qwe');
 
 -- --------------------------------------------------------
 
@@ -212,13 +205,6 @@ ALTER TABLE `animales`
   ADD KEY `RefugioId` (`RefugioId`) USING BTREE;
 
 --
--- Indices de la tabla `eventos`
---
-ALTER TABLE `eventos`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `RefugioId` (`RefugioId`) USING BTREE;
-
---
 -- Indices de la tabla `noticias`
 --
 ALTER TABLE `noticias`
@@ -255,31 +241,25 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `animales`
 --
 ALTER TABLE `animales`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
-
---
--- AUTO_INCREMENT de la tabla `eventos`
---
-ALTER TABLE `eventos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
 
 --
 -- AUTO_INCREMENT de la tabla `noticias`
 --
 ALTER TABLE `noticias`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT de la tabla `refugios`
 --
 ALTER TABLE `refugios`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT de la tabla `tareas`
 --
 ALTER TABLE `tareas`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
@@ -297,12 +277,6 @@ ALTER TABLE `usuarios`
 ALTER TABLE `animales`
   ADD CONSTRAINT `animal_ibfk_1` FOREIGN KEY (`RefugioId`) REFERENCES `refugios` (`Id`) ON DELETE CASCADE,
   ADD CONSTRAINT `animal_ibfk_2` FOREIGN KEY (`UsuarioId`) REFERENCES `usuarios` (`Id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `eventos`
---
-ALTER TABLE `eventos`
-  ADD CONSTRAINT `evento_ibfk_1` FOREIGN KEY (`RefugioId`) REFERENCES `refugios` (`Id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `noticias`
