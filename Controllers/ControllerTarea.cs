@@ -2,6 +2,7 @@ using API_Animalogistics.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 
 namespace API_Animalogistics.Controllers
 {
@@ -14,51 +15,30 @@ namespace API_Animalogistics.Controllers
         private readonly IConfiguration _config = _config;
 
 
+        // Se obtienen todas las tareas disponibles de un refugio
+        // una tarea esta disponible si no tiene un usuario como voluntario asociado
+        // estas van a ser los voluntariados disponibles para que un usuario se haga voluntario de un refugio
 
-        [HttpGet("listarTareasDeUnRefugio")]// Se obtienen todas las tareas de un refugio
+
+        [HttpGet("listarTareasDisponiblesDeUnRefugio")]
         [Authorize]
-        public async Task<IActionResult> ListarTareasDeUnRefugio([FromForm] Refugio refugio)
+        public async Task<IActionResult> ListarTareasDisponiblesDeUnRefugio(int refugioId)
         {
 
             try
             {
-                // reviso que sea un usuario valido
-                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
-
-                if (usuario == null)
-                {
-                    return BadRequest("Usuario no encontrado.");
-                }
-                // reviso que el usuario sea voluntario del refugio 
-
-                var Uvoluntario = await _contexto.Voluntarios
-                                    .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(v => v.UsuarioId == usuario.Id && v.RefugioId == refugio.Id);
-                if (Uvoluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
-
-                // reviso que el voluntario tenga el permiso de gestion de tareas
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Tareas");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar tareas.");
-                }
-
-
 
                 var tareas = await _contexto.Tareas
-                                              .Include(e => e.Refugio)
-                                              .Where(e => e.RefugioId == refugio.Id)
+                                              .Include(v => v.Refugio)
+                                              /* .Include(v => v.Usuario) */
+                                              .Where(v => v.RefugioId == refugioId && v.Usuario == null)
                                               .ToListAsync();
-                if (tareas == null || !tareas.Any())
+
+
+                if (tareas == null || tareas.Count == 0)
                 {
-                    return NotFound("No se encontraron tareas para este refugio.");
+
+                    return NotFound(new { mensaje = "No se encontraron tareas disponibles para este refugio." + refugioId });
                 }
                 return Ok(tareas);
 
@@ -69,6 +49,303 @@ namespace API_Animalogistics.Controllers
             }
         }
 
+
+
+
+        [HttpGet("listarTareasDeUnRefugio")]
+        [Authorize]
+        public async Task<IActionResult> ListarTareasDeUnRefugio(int refugioId)
+        {
+
+            try
+            {
+
+
+
+
+
+
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return BadRequest("Usuario no encontrado.");
+                }
+                //Comprobar que el refugio exista
+                var refugio = await _contexto.Refugios
+                                              .Include(e => e.Usuario)
+                                              .SingleOrDefaultAsync(e => e.Id == refugioId);
+                if (refugio == null)
+                {
+                    return BadRequest("Refugio no encontrado.");
+                }
+                /* 
+                                //El usuario es dueno del refugio?
+                                var tareas = new List<Tarea>();
+                                if(refugio.Usuario == usuario){
+                 */
+                var tareas = await _contexto.Tareas
+                                          .Include(v => v.Refugio)
+                                          .Include(v => v.Usuario)
+                                          .Where(v => v.RefugioId == refugioId)
+                                          .ToListAsync();
+
+                /*      } */
+
+                /*   // esta siendo voluntario de un refugio?
+
+                  else
+                  {
+                      tareas = await _contexto.Tareas
+                                                .Include(v => v.Refugio)       
+                                                .Include(v => v.Usuario)                                      
+                                                .Where( v =>v.RefugioId == refugioId && v.Usuario == usuario)                                            
+                                                .ToListAsync();
+
+                  }
+   */
+
+
+
+
+                if (tareas == null)
+                {
+
+                    return BadRequest(new { mensaje = "Se produjo un error al tratar de procesar la solicitud." + refugioId });
+                }
+
+                Console.WriteLine(tareas.Count);
+                return Ok(tareas);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        }
+
+
+
+        [HttpDelete("borrarTareaRefugio")]
+        [Authorize]
+        public async Task<IActionResult> BorrarTareaRefugio(int tareaId)
+        {
+
+            try
+            {
+
+                // si es dueño del refugio puede borrar cualquier tarea
+
+                // si es voluntario no puede borrar tareas a las que el se a anotado, si no que puede desasociarse desde editar
+
+                // si no es dueno ni voluntario no se que hace aca asdasdadsada
+
+
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return BadRequest("Usuario no encontrado.");
+                }
+
+
+
+                // conprobar que la tarea exista
+
+
+                var tarea = await _contexto.Tareas
+                                              .Include(v => v.Refugio)
+                                              .Include(v => v.Usuario)
+                                              .Where(v => v.Id == tareaId)
+                                              .FirstOrDefaultAsync();
+
+
+                if (tarea == null)
+                {
+
+                    return NotFound(new { mensaje = "No se encontro la tarea a borrar." });
+                }
+
+
+                // esa tarea puede ser borrada? si  es dueno  ,si
+
+
+                if (tarea.Refugio.Usuario == usuario)
+                {
+
+                    _contexto.Tareas.Remove(tarea);
+                    _contexto.SaveChanges();
+                    return Ok(tarea);
+                }
+                /*  else if(tarea.Usuario == usuario ){
+
+                     tarea.Usuario = null;
+                     _contexto.SaveChanges();
+                     return Ok(tarea);    
+
+                 } */
+                else
+                {
+
+                    return BadRequest(new { permiso = "No tiene permisos para borrar esta tarea." });
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        }
+
+
+
+
+
+        [HttpPut("anotarseAUnaTarea")]
+        [Authorize]
+        public async Task<IActionResult> AnotarseAUnaTarea(int tareaId)
+        {
+
+            try
+            {
+
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return BadRequest("Usuario no encontrado .");
+                }
+
+                var tarea = await _contexto.Tareas
+                                            .Include(t => t.Refugio)
+                                            .Include(t => t.Usuario)
+                                            .FirstOrDefaultAsync(t => t.Id == tareaId);
+                if (tarea == null)
+                {
+                    return NotFound("Tarea no encontrada.");
+                }
+
+                tarea.Usuario = usuario;
+
+
+
+
+
+                _contexto.Tareas.Update(tarea);
+                _contexto.SaveChanges();
+
+                return Ok(tarea);
+            }
+            catch (Exception ex)
+            {
+                // mensaje informativo en caso de error
+                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+            }
+        }
+
+
+        // solo si es dueno del refugio donde esta la tarea
+        // solo si es el encargado de la tarea
+        [HttpGet("tareaPorId")]
+        [Authorize]
+        public async Task<IActionResult> TareaPorId(int tareaId)
+        {
+
+            try
+            {
+
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return BadRequest("Usuario no encontrado.");
+                }
+
+                var tarea = await _contexto.Tareas
+                                              .Include(v => v.Refugio)
+                                              .Include(v => v.Usuario)
+                                              .Where(v => v.Id == tareaId && (v.Refugio.Usuario == usuario || v.Usuario == usuario))
+                                              .FirstOrDefaultAsync();
+
+                if (tarea == null)
+                {
+
+                    return NotFound(new { mensaje = "No se encontro la tarea." });
+                }
+
+                return Ok(tarea);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        }
+
+
+
+
+        // Se edita una tarea
+        // si es dueno del refugio puede editar cualquier parametro de cualquier tarea
+        // si es voluntario del refugio solo puede editar si estar a cargo de la tarea
+        [HttpPut("tareaEditar")]
+        [Authorize]
+        public async Task<IActionResult> TareaEditar([FromBody] Tarea tarea)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                // reviso que el usuario es valido
+                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuario == null)
+                {
+                    return NotFound(new { mensaje = "Usuario no encontrado." });
+                }
+
+                var tareaOriginal = await _contexto.Tareas
+                                  .Include(t => t.Refugio)
+                                  .Include(t => t.Usuario)
+                                   .FirstOrDefaultAsync(v => (v.Refugio.Usuario.Id == usuario.Id || v.Usuario == usuario) && (v.Id == tarea.Id));
+
+                // reviso que el usuario sea el dueno del refugio o el encargado de la tarea
+
+                if (tareaOriginal == null)
+                {
+                    return NotFound(new { mensaje = "No se encontro la tarea." });
+                }
+
+
+                // si el usuario es el duenio del refugio puedo editar todos los parametros de la tarea
+                // si el usuario es el encargado o dueno de la tarea puedo editar el compromiso con la tarea ( liberar la tarea)
+
+
+                if (tareaOriginal.Refugio.Usuario == usuario)
+                {
+                    tareaOriginal.Actividad = tarea.Actividad;
+                    tareaOriginal.Descripcion = tarea.Descripcion;
+                }
+                if (tarea.Usuario == null)
+                {
+                    tareaOriginal.Usuario = null;
+                }
+
+                _contexto.Update(tareaOriginal);
+
+                await _contexto.SaveChangesAsync();
+
+                return Ok(tareaOriginal);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+            }
+        }
 
 
 
@@ -87,123 +364,31 @@ namespace API_Animalogistics.Controllers
 
                 if (usuario == null)
                 {
-                    return BadRequest("Usuario no encontrado.");
+                    return BadRequest(new { mensaje = "Usuario no encontrado." });
                 }
                 //Comprobar que el refugio exista
                 var refugio = await _contexto.Refugios
                                               .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == tarea.RefugioId);
+                                              .SingleOrDefaultAsync(e => e.Id == tarea.RefugioId && e.Usuario == usuario);
                 if (refugio == null)
                 {
-                    return BadRequest("Refugio no encontrado.");
-                }
-                // reviso que el usuario sea voluntario del refugio 
-
-                var Uvoluntario = await _contexto.Voluntarios
-                                    .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(v => v.UsuarioId == usuario.Id && v.RefugioId == refugio.Id);
-                if (Uvoluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
+                    return BadRequest(new { mensaje = "Refugio no encontrado o no es el duenio." });
                 }
 
-                // reviso que tenga el permiso de gestion de tareas
-
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Tareas");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar tareas.");
-                }
 
 
                 _contexto.Tareas.Add(tarea);
-                _contexto.SaveChanges();
+                await _contexto.SaveChangesAsync();
                 return Ok(tarea);
             }
             catch (Exception ex)
             {
-                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
+                return BadRequest(new { mensaje = "Se produjo un error al tratar de procesar la solicitud: " + ex.Message });
             }
 
         }
-
-
-
-        [HttpPut("tareaEditar")]// Se edita una tarea
-        [Authorize]
-        public async Task<IActionResult> TareaEditar([FromForm] Tarea tarea)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                // reviso que el usuario es valido
-                var usuario = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
-
-                if (usuario == null)
-                {
-                    return BadRequest("Usuario no encontrado.");
-                }
-                //Comprobar que el refugio exista
-                var refugio = await _contexto.Refugios
-                                              .Include(e => e.Usuario)
-                                              .SingleOrDefaultAsync(e => e.Id == tarea.RefugioId);
-                if (refugio == null)
-                {
-                    return BadRequest("Refugio no encontrado.");
-                }
-                // reviso que el usuario sea voluntario del refugio
-
-                var Uvoluntario = await _contexto.Voluntarios
-                                    .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(v => v.UsuarioId == usuario.Id && v.RefugioId == refugio.Id);
-                if (Uvoluntario == null)
-                {
-                    return BadRequest("Voluntario no encontrado o no pertenece a este refugio.");
-                }
-
-
-                // reviso que tenga el permiso de gestion de tareas
-
-                var permiso = await _contexto.Permisos
-                                              .Include(e => e.Voluntario)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync(p => p.VoluntarioId == Uvoluntario.Id && p.Rol == "Tareas");
-                if (permiso == null)
-                {
-                    return BadRequest("No tiene permiso para gestionar tareas.");
-                }
-
-                var tareaActual = await _contexto.Tareas
-                                              .AsNoTracking()
-                                              .Include(e => e.Refugio)
-                                              .Include(e => e.Voluntario)
-                                              .SingleOrDefaultAsync(e => e.Id == tarea.Id);
-                if (tareaActual == null)
-                {
-                    return NotFound("Tarea no encontrada.");
-                }
-                _contexto.Entry(tareaActual).CurrentValues.SetValues(tarea);
-                _contexto.SaveChanges();
-                return Ok(tarea);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
-            }
-        }
-
-
-
-
 
 
     }
 }
+

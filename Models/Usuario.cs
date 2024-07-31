@@ -20,7 +20,7 @@ namespace API_Animalogistics.Models{
 		[Display(Name = "Teléfono")]
 		public string? Telefono { get; set; }
         [DataType(DataType.Password)]
-		[Required(ErrorMessage = "La contrasena es obligatoria.")]
+		/* [Required(ErrorMessage = "La contrasena es obligatoria.")] */
         public string? Contrasena { get; set; }
 		[DataType(DataType.EmailAddress, ErrorMessage = "El correo debe contener un formato valido.")]
 		[Required(ErrorMessage = "El correo es obligatorio.")]

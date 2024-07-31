@@ -12,7 +12,7 @@ namespace API_Animalogistics.Models
         public int Id { get; set; }
 
         [Display(Name = "Usuario")]
-        public int UsuarioId { get; set; }
+        public int? UsuarioId { get; set; }
         [ForeignKey(nameof(UsuarioId))]
         public Usuario? Usuario { get; set; }
         [Required(ErrorMessage = "El nombre es obligatorio.")]

@@ -14,7 +14,6 @@ namespace API_Animalogistics.Controllers
         private readonly IConfiguration _config = _config;
 
 
-
         [HttpPost("animalAgregar")]// Un usuario registra un animal 
         [Authorize]
         public async Task<IActionResult> AnimalAgregar([FromForm] Animal animal)
@@ -105,23 +104,49 @@ namespace API_Animalogistics.Controllers
             }
         }
 
+
         //listar animales de un refugio
         [HttpGet("animalListarPorRefugio")]
         [Authorize]
-        public async Task<IActionResult> AnimalListarPorRefugio([FromForm] int refugioId)
+        public async Task<IActionResult> AnimalListarPorRefugio(int refugioId)
         {
 
             try
             {
                 var animales = await _contexto.Animales
                                               .Include(a => a.Usuario)
+                                              .Include(a => a.Refugio)
                                               .Where(a => a.RefugioId == refugioId)
                                               .ToListAsync();
 
-                if (animales == null || !animales.Any())
+                return Ok(animales);
+            }
+            catch (Exception ex)
+            {
+                // mensaje informativo en caso de error
+                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+            }
+        }
+
+
+        //listar animales disponibles para adoptar de un refugio 
+        [HttpGet("listarAnimalesDisponiblesParaAdoptarPorRefugio")]
+        [Authorize]
+        public async Task<IActionResult> ListarAnimalesDisponiblesParaAdoptarPorRefugio(int refugioId)
+        {
+
+            try
+            {
+                var animales = await _contexto.Animales
+                                              .Include(a => a.Usuario)
+                                              .Where(a => a.RefugioId == refugioId && (
+                                                a.Estado == "En adopcion" || a.Estado == "En recuperacion"))
+                                              .ToListAsync();
+
+                if (animales == null || animales.Count == 0)
                 {
                     // Si no se encuentran animales
-                    return NotFound("No se encontraron animales para el refugio actual.");
+                    return NotFound(new { message = "No se encontraron animales para el refugio actual." });
                 }
 
                 return Ok(animales);
@@ -132,6 +157,8 @@ namespace API_Animalogistics.Controllers
                 return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
             }
         }
+
+
 
         //listar todos los animales que no tengan refugio
         [HttpGet("animalListarSinRefugio")]
@@ -146,11 +173,7 @@ namespace API_Animalogistics.Controllers
                                               .Where(e => e.RefugioId == null)
                                               .ToListAsync();
 
-                if (animales == null || !animales.Any())
-                {
-                    // Si no se encuentran animales
-                    return NotFound("No se encontraron animales.");
-                }
+
 
                 return Ok(animales);
             }
@@ -164,9 +187,9 @@ namespace API_Animalogistics.Controllers
 
         //editar animal que sea de un usuario y no tenga refugio
 
-        [HttpPut("animalEditarDeUsuario")]
+        [HttpPut("animalEditar")]
         [Authorize]
-        public async Task<IActionResult> AnimalEditarDeUsuario([FromForm] Animal animalEditado)
+        public async Task<IActionResult> AnimalEditar([FromForm] Animal animalEditado)
         {
 
             try
@@ -187,21 +210,77 @@ namespace API_Animalogistics.Controllers
                 // Verifico si el animal fue registrado por el usuario actual
                 var animalExiste = await _contexto.Animales
                                     .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(i => i.Id == animalEditado.Id && i.Usuario.Correo == usuarioActual.Correo && i.RefugioId == null);
+                                    .Include(a => a.Refugio)
+                                    .SingleOrDefaultAsync(i => (i.Id == animalEditado.Id) &&
+                                                                ((i.Usuario == usuarioActual && i.RefugioId == null) ||
+                                                                 (i.Refugio.Usuario == usuarioActual)));
 
                 if (animalExiste != null)
                 {
                     //actualizo el animal
+                    Console.WriteLine("Animal Editado: " + animalEditado.GPSX + " | " + animalEditado.GPSY);
+                    Console.WriteLine("Animal Existe: " + animalExiste.GPSX + " | " + animalExiste.GPSY);
 
-                    _contexto.Animales.Update(animalEditado);
+
+                    animalExiste.UsuarioId = usuarioActual.Id;
+
+                    animalExiste.Nombre = animalEditado.Nombre;
+                    animalExiste.Edad = animalEditado.Edad;
+                    animalExiste.Tipo = animalEditado.Tipo;
+                    animalExiste.Tamano = animalEditado.Tamano;
+                    animalExiste.Collar = animalEditado.Collar;
+                    animalExiste.Genero = animalEditado.Genero;
+                    animalExiste.Comentarios = animalEditado.Comentarios;
+                    animalExiste.GPSX = animalEditado.GPSX;
+                    animalExiste.GPSY = animalEditado.GPSY;
+                    animalExiste.Estado = animalEditado.Estado;
+
+
+
+
+                    if (animalEditado.FotoFile != null)
+                    {
+
+
+                        if (animalExiste.FotoUrl != null)
+                        {
+                            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+
+                            string fullPath = Path.Combine(basePath, animalExiste.FotoUrl);
+
+                            Console.WriteLine(fullPath);
+                            if (System.IO.File.Exists(animalExiste.FotoUrl)/*  && !animalEditado.FotoUrl.Contains("Defaultanimal.jpeg") */)
+                            {
+                                System.IO.File.Delete(animalExiste.FotoUrl);
+                            }
+
+                        }
+
+                        var animalImagen = Guid.NewGuid().ToString() + Path.GetExtension(animalEditado.FotoFile.FileName);
+
+                        string pathCompleto = _config["Data:animalImg"] + animalImagen;
+
+                        animalExiste.FotoUrl = pathCompleto;
+                        using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
+                        {
+                            animalEditado.FotoFile.CopyTo(stream);
+                        }
+
+
+                    }
+
+
+
+
+
+
                     await _contexto.SaveChangesAsync();
 
                     return Ok(animalEditado);
                 }
                 else
                 {
-                    return NotFound("No se encontro el animal.");
+                    return NotFound("No puede editar el animal.");
                 }
             }
             catch (Exception ex)
@@ -213,214 +292,9 @@ namespace API_Animalogistics.Controllers
         }
 
 
-        [HttpPut("animalEditarDeRefugio")]
-        [Authorize(Roles = "Administrador, Animales")]
-        public async Task<IActionResult> AnimalEditarDeRefugio([FromForm] Animal animalEditado)
-        {
-
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                // reviso que lo registre un usuario valido
-                var usuarioActual = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
-
-                if (usuarioActual == null)
-                {
-                    return BadRequest("Usuario no encontrado.");
-                }
-                // reviso que el usuario sea voluntario del refugio que va a editar el animal
-
-
-                var Uvoluntario = await _contexto.Voluntarios
-                                    .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(v => v.UsuarioId == usuarioActual.Id);
-
-
-                if (Uvoluntario == null)
-                {
-                    return BadRequest("Este usuario no es voluntario de este refugio.");
-                }
-
-
-                //
-                var animalExiste = (from animal in _contexto.Animales
-                                    join voluntario in _contexto.Voluntarios on animal.RefugioId equals voluntario.RefugioId
-                                    where animal.Id == animalEditado.Id && voluntario.Id == Uvoluntario.Id
-                                    select animal).FirstOrDefault();
-
-
-                if (animalExiste != null)
-                {
-                    //actualizo el animal
-
-                    _contexto.Animales.Update(animalEditado);
-                    await _contexto.SaveChangesAsync();
-
-                    return Ok(animalEditado);
-                }
-                else
-                {
-                    return NotFound("No se encontro el animal.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message + "\n" + ex.InnerException);
-            }
-
-
-        }
-
-
-        [HttpPut("animalEditarSinRefugio")]
-        [Authorize(Roles = "Administrador, Animales")]
-        public async Task<IActionResult> AnimalEditarSinRefugio([FromForm] Animal animalEditado)
-        {
-
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                // reviso que lo registre un usuario valido
-                var usuarioActual = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
-
-                if (usuarioActual == null)
-                {
-                    return BadRequest("Usuario no encontrado.");
-                }
-                // reviso que el usuario sea voluntario del refugio que va a editar el animal
-
-
-                var Uvoluntario = await _contexto.Voluntarios
-                                    .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(v => v.UsuarioId == usuarioActual.Id);
-
-
-                if (Uvoluntario == null)
-                {
-                    return BadRequest("Este usuario no es voluntario de este refugio.");
-                }
-
-
-                //
-                var animalExiste = await _contexto.Animales
-                                    .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(a => a.Id == animalEditado.Id && a.RefugioId == null);
-
-
-
-
-                if (animalExiste != null)
-                {
-                    //actualizo el animal
-
-                    //desde el front a animalEditado le seteo el refugioId 
-
-                    _contexto.Animales.Update(animalEditado);
-                    await _contexto.SaveChangesAsync();
-
-                    return Ok(animalEditado);
-                }
-                else
-                {
-                    return NotFound("No se encontro el animal.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message + "\n" + ex.InnerException);
-            }
-
-        }
-
-
-        [HttpPut("animalEditarFoto")]
-        [Authorize(Roles = "Administrador, Animales")]
-        public async Task<IActionResult> AnimalEditarFoto(IFormFile? Foto, [FromForm] int AnimalId)
-        {
-            try
-            {
-                var UsuarioLogeado = User.Identity.Name;
-                Usuario usuario = await _contexto.Usuarios.SingleOrDefaultAsync(u => u.Correo == UsuarioLogeado);
-
-                Animal animal = await _contexto.Animales.SingleOrDefaultAsync(a => a.Id == AnimalId);
-
-                if (usuario == null)
-                {
-                    return NotFound("Usuario no encontrado");
-                }
-                if (animal == null)
-                {
-                    return NotFound("animal no encontrado");
-                }
-
-
-
-                if (Foto == null)
-                { //la quiero borrar entonces le seteo una por default
-
-
-                    if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
-                    {
-                        System.IO.File.Delete(animal.FotoUrl);
-                    }
-
-                    string pathBannerDefault = Path.Combine(_config["Data:animalImg"], "Defaultanimal.jpeg");
-                    animal.FotoUrl = pathBannerDefault;
-
-                }
-                else
-                {
-
-
-
-                    if (System.IO.File.Exists(animal.FotoUrl) && !animal.FotoUrl.Contains("Defaultanimal.jpeg"))
-                    {
-                        System.IO.File.Delete(animal.FotoUrl);
-                    }
-
-
-                    var FotoUrl = Guid.NewGuid().ToString() + Path.GetExtension(Foto.FileName);
-
-                    string pathCompleto = Path.Combine(_config["Data:animalImg"], FotoUrl);
-                    animal.FotoUrl = pathCompleto;
-
-
-                    using (FileStream stream = new FileStream(pathCompleto, FileMode.Create))
-                    {
-                        Foto.CopyTo(stream);
-                    }
-
-                }
-                //_contexto.Refugios.Update(refugio);
-
-                await _contexto.SaveChangesAsync();
-
-                return Ok("Banner moficado correctamente");
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al tratar de procesar la solicitud: " + ex.Message);
-            }
-        }
-
-
-        [HttpDelete("animalBorrarDeUsuario")]
-        [Authorize(Roles = "Administrador, Animales")]
-        public async Task<IActionResult> AnimalBorrarDeUsuario(int AnimalId)
+        [HttpDelete("animalBorrar")]
+        [Authorize]
+        public async Task<IActionResult> AnimalBorrar(int animalId)
         {
             try
             {
@@ -435,8 +309,8 @@ namespace API_Animalogistics.Controllers
 
                 var animal = await _contexto.Animales
                                     .Include(a => a.Usuario)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(a => a.Id == AnimalId && a.RefugioId == null);
+                                    .Include(a => a.Refugio)
+                                    .FirstOrDefaultAsync(a => a.Id == animalId);
 
 
                 if (animal == null)
@@ -444,14 +318,18 @@ namespace API_Animalogistics.Controllers
                     return NotFound("No se encontro el animal.");
                 }
 
-                if (animal.UsuarioId != usuario.Id)
+                if ((animal.UsuarioId == usuario.Id && animal.RefugioId == null) || (animal.Refugio.Usuario == usuario))
                 {
-                    return BadRequest("No puede borrar un animal que no le pertenece.");
+                    _contexto.Animales.Remove(animal);
+                    await _contexto.SaveChangesAsync();
+                    return Ok(animal);
+                }
+                else
+                {
+                    return NotFound("No puede borrar un animal que no gestiona.");
                 }
 
-                _contexto.Animales.Remove(animal);
-                await _contexto.SaveChangesAsync();
-                return Ok("Animal borrado correctamente.");
+
 
             }
             catch (Exception ex)
@@ -464,13 +342,59 @@ namespace API_Animalogistics.Controllers
 
 
 
+        [HttpPut("animalAgregarARefugio")]
+        [Authorize]
+        public async Task<IActionResult> AnimalAgregarARefugio(int animalId, int refugioId)
+        {
 
-        // solo el usuario puede borrar animales que el halla registrado
-        // y que no esten asociados a un refugio
-        //-
-        // un refugio no puede borrar animales, puedo asocialos a ellos y desasociarlos
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // reviso que lo registre un usuario valido 
+                var usuarioActual = await _contexto.Usuarios.SingleOrDefaultAsync(e => e.Correo == User.Identity.Name);
+
+                if (usuarioActual == null)
+                {
+                    return BadRequest("Usuario no encontrado.");
+                }
+
+                // Verifico si el animal existe
+                var animalExiste = await _contexto.Animales
+                                    .Include(a => a.Usuario)
+                                    .Include(a => a.Refugio)
+                                    .SingleOrDefaultAsync(i => i.Id == animalId);
+
+                var refugioExiste = await _contexto.Refugios
+                                    .Include(r => r.Usuario)
+                                    .SingleOrDefaultAsync(r => r.Id == refugioId && r.UsuarioId == usuarioActual.Id);
+
+                if (animalExiste != null)
+                {
+
+                    animalExiste.Refugio = refugioExiste;
+                    animalExiste.Estado = "En recuperacion";
+
+                    _contexto.Animales.Update(animalExiste);
+                    await _contexto.SaveChangesAsync();
+
+                    return Ok(animalExiste);
+                }
+                else
+                {
+                    return NotFound("No puede editar el animal.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Se produjo un error al procesar la solicitud." + "\n" + ex.Message);
+            }
 
 
+        }
 
     }
 
